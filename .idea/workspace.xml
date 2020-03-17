@@ -26,8 +26,15 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/Piotr" />
     <property name="settings.editor.selected.configurable" value="vcs.Git" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Users\baryl\Documents\GitHub\Camera-Paint\Piotr" />
+      <recent name="D:\Users\baryl\Documents\GitHub\Camera-Paint\Paulina" />
+      <recent name="D:\Users\baryl\Documents\GitHub\Camera-Paint\Patryk" />
+    </key>
   </component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
@@ -69,6 +76,7 @@
       <option name="presentableId" value="Default" />
       <updated>1584435566710</updated>
       <workItem from="1584435569580" duration="211000" />
+      <workItem from="1584436045486" duration="62000" />
     </task>
     <servers />
   </component>
@@ -100,6 +108,10 @@
       <screen x="0" y="0" width="1366" height="728" />
     </state>
     <state x="184" y="6" key="SettingsEditor/0.0.1366.728@0.0.1366.728" timestamp="1584435594269" />
+    <state x="379" y="188" key="com.intellij.ide.util.TipDialog" timestamp="1584436045060">
+      <screen x="0" y="0" width="1366" height="728" />
+    </state>
+    <state x="379" y="188" key="com.intellij.ide.util.TipDialog/0.0.1366.728@0.0.1366.728" timestamp="1584436045060" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/Camera_Paint$main.coverage" NAME="main Coverage Results" MODIFIED="1584435764476" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
