@@ -64,8 +64,11 @@ class camera:
 
         while cap.isOpened():
             ret, frame = cap.read()
-            frame = self.draw_place(frame)
+
             frame = cv2.flip(frame, 1)
+
+            if self.histogram_created_check is False:
+                frame = self.draw_place(frame)
 
             if cv2.waitKey(1) & 0xFF == 32:
                 self.histogram_created_check = True
@@ -78,7 +81,10 @@ class camera:
                 hist_masked_image = cv2.erode(hist_masked_image, erode_kernel)
                 hist_masked_image = cv2.dilate(hist_masked_image, dilate_kernel)
                 contour_list = contours(hist_masked_image)
-                max_cont = max(contour_list, key=cv2.contourArea)
+                try:
+                    max_cont = max(contour_list, key=cv2.contourArea)
+                except ValueError:
+                    print("out")
                 cnt_centroid = centroid(max_cont)
                 cv2.circle(frame, cnt_centroid, 5, [255, 0, 255], -1)
             else:
