@@ -103,7 +103,7 @@ class camera:
         cv2.destroyAllWindows()
     """
 
-    def scan_object(self):
+    def scan_object_fast(self):
         cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('Scan', 800, 600)
 
@@ -123,6 +123,21 @@ class camera:
                 break
         cv2.destroyAllWindows()
         return self.histogram
+
+    def scan_object(self):
+        ret, frame = self.cap.read()
+
+        frame = cv2.flip(frame, 1)
+
+        frame = self.draw_place(frame)
+
+        if cv2.waitKey(1) & 0xFF == 32:
+            self.histogram_created_check = True
+            self.histogram, _ = self.create_histogram(frame)
+        return frame
+    
+    def set_histogram_created_check_not(self):
+        self.histogram_created_check = False
 
     def get_center(self):
         ret, frame = self.cap.read()
@@ -152,13 +167,19 @@ class camera:
 def main():
     usage = camera()
     # usage.capture()
+    # usage.scan_object()
 
+    cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Scan', 800, 600)
+    while usage.histogram_created_check is False:
+        frame = usage.scan_object()
+        cv2.imshow('Scan', frame)
+    cv2.destroyAllWindows()
     cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Live', 800, 600)
-    usage.scan_object()
     while usage.cap.isOpened():
         img, _ = usage.get_center()
-        cv2.imshow('live', img)
+        cv2.imshow('Live', img)
         if cv2.waitKey(1) & 0xFF == 27:
             break
 
