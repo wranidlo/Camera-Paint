@@ -70,6 +70,8 @@ class Application(tk.Frame):
         widget.bind('<Leave>', leave)
 
     def createWidgets(self):
+        #MENUS
+
         #toplevel menu
         self.MENU = tk.Menu(self)
 
@@ -101,24 +103,40 @@ class Application(tk.Frame):
         self.MENU.add_cascade(label='Settings', menu=self.SETTINGSMENU)
         self.SETTINGSMENU.add_command(label='Not implemented yet')
 
+        #FRAMES
+
         #left frame for tools
-        self.TOOLSFRAME = tk.Frame(self, width=100)
-        self.TOOLSFRAME.grid(row=0, column=0, sticky=tk.W)
+        self.TOOLSFRAME = tk.Frame(self, width=100, bg="dodgerblue")
+        self.TOOLSFRAME.grid(row=0, column=0, sticky=tk.W, )
+        self.TOOLSFRAME.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+        self.TOOLSFRAME.columnconfigure(0, weight=1)
+        self.TOOLSFRAME.rowconfigure(0, weight=1)
+        self.TOOLSFRAME.rowconfigure(1, weight=1)
         #(anchor=tk.N, fill=tk.BOTH, expand=False, side=tk.LEFT)
 
         #central frame for image
         self.IMAGEFRAME = tk.Frame(self, width=540, height=380)
         self.IMAGEFRAME.grid(row=0, column=1)
+        self.IMAGEFRAME.grid(sticky=tk.W + tk.E + tk.N + tk.S)
+        self.IMAGEFRAME.columnconfigure(0, weight=1)
+        self.IMAGEFRAME.rowconfigure(0, weight=1)
         #(fill=tk.BOTH, expand=True)
 
-        #bottom frame - TODO empty space to use
-        self.BOTTOMFRAME = tk.Frame(self, height=100)
-        self.BOTTOMFRAME.grid(row=1, column=1)
-        #tools widgets
+        #TOOLS WIDGETS
+
+        #Creating subframes for different categories
+        self.SUB_TOOLSFRAME_1 = tk.LabelFrame(self.TOOLSFRAME, text="Painting tools", bg="lightcyan")
+        self.SUB_TOOLSFRAME_1.grid(row=0, column=0)
+        self.SUB_TOOLSFRAME_1.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+        self.SUB_TOOLSFRAME_2 = tk.LabelFrame(self.TOOLSFRAME, text="Scanner options", bg="lightcyan")
+        self.SUB_TOOLSFRAME_2.grid(row=1, column=0)
+        self.SUB_TOOLSFRAME_2.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+
         #Creating button
-        self.TOOLBUTTON = tk.Menubutton(self.TOOLSFRAME, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER)
-        self.TOOLBUTTON.grid(row=0, column=0, pady=2)
+        self.TOOLBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER, bg="lightcyan")
+        self.TOOLBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
         #.pack(side=tk.TOP)
+
         #Creating tools menu
         self.TOOLBUTTON.menu = tk.Menu(self.TOOLBUTTON, tearoff=0)
         self.TOOLBUTTON["menu"] = self.TOOLBUTTON.menu
@@ -129,8 +147,8 @@ class Application(tk.Frame):
         self.createToolTip(self.TOOLBUTTON, "Tool")
 
         # Creating button
-        self.COLOURBUTTON = tk.Menubutton(self.TOOLSFRAME, bd=0, image=self.IMAGES['redColour'], compound=tk.CENTER)
-        self.COLOURBUTTON.grid(row=1, column=0, pady=2)
+        self.COLOURBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['redColour'], compound=tk.CENTER, bg="white")
+        self.COLOURBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
         #pack(side=tk.TOP)
         # Creating colour menu
         self.COLOURBUTTON.menu = tk.Menu(self.COLOURBUTTON, tearoff=0)
@@ -142,13 +160,19 @@ class Application(tk.Frame):
         #ToolTip for button
         self.createToolTip(self.COLOURBUTTON, "Colour")
 
+        # Create scan button
+        self.SCANBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="SCAN", anchor=tk.CENTER)
+        self.SCANBUTTON.grid(row=0, column=0, sticky=tk.N)
+
+        #IMAGE WIDGETS
+
         #Creating label with background for image grid
         self.original_frame = Image.open('bird.jpg')
         self.frame = ImageTk.PhotoImage(self.original_frame)
 
-        self.display = tk.Canvas(self.IMAGEFRAME, bd=0, highlightthickness=0)
+        self.display = tk.Canvas(self.IMAGEFRAME, bd=0, highlightthickness=0, bg="white")
         self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
-        self.display.grid(row=0, sticky=tk.W + tk.E + tk.N + tk.S)
+        self.display.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
         self.IMAGEFRAME.bind("<Configure>", self.resize)
 
         #tutorial buttons
@@ -166,13 +190,13 @@ class Application(tk.Frame):
         # self.hi_there.pack({"side": "left"})
 
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent, bg="dodgerblue")
         self.parent = parent
         self.initGui()
 
     def initGui(self):
         self.parent.title("Camera Paint")
-        self.parent.geometry('640x480')
+        #self.parent.geometry('640x480')
         self.parent.resizable(width=tk.TRUE, height=tk.TRUE)
         self.grid(sticky=tk.W + tk.E + tk.N + tk.S, padx=20, pady=20)
         #self.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
@@ -182,10 +206,9 @@ class Application(tk.Frame):
         # self.columnconfigure(0, weight=1)
         # self.rowconfigure(1, weight=1)
 
-        self.rowconfigure(0, weight=10)
-        self.rowconfigure(1, weight=1)
-        self.columnconfigure(0, weight=1)
-        self.columnconfigure(1, weight=10)
+        self.rowconfigure(0, weight=1)
+        self.columnconfigure(0, weight=0)
+        self.columnconfigure(1, weight=1)
         self.IMAGES = {}
         self.initializeImages()
         self.createWidgets()
