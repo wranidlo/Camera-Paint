@@ -1,4 +1,5 @@
 import tkinter as tk
+from concurrent.futures.process import ProcessPoolExecutor
 from tkinter import ttk
 from camera import Camera
 from PIL import Image, ImageTk
@@ -79,6 +80,7 @@ class Application(tk.Frame):
         self.usage.set_histogram_created_check_not()
         cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('Scan', 800, 600)
+        self.usage.cap = cv2.VideoCapture(0)
         while self.usage.histogram_created_check is False:
             frame = self.usage.scan_object()
             cv2.imshow('Scan', frame)
@@ -93,29 +95,27 @@ class Application(tk.Frame):
         self.usage.cap.release()
 
         cv2.destroyAllWindows()
-        # TODO implementation of camera configuration (CAMERA MODULE)
 
     def toggleViewAction(self):
-        if self.usage.histogram_created_check is True:
-            cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
-            cv2.resizeWindow('Live', 800, 600)
-            self.usage.cap = cv2.VideoCapture(0)
-            while self.usage.cap.isOpened():
-                img, _ = self.usage.get_center()
-                cv2.imshow('Live', img)
-                self.original_frame = Image.fromarray(img)
-                self.frame = ImageTk.PhotoImage(self.original_frame)
+        if self.check_display == 0:
+            if self.usage.histogram_created_check is True:
+                print("here")
+                self.check_display = 1
+                self.usage.cap = cv2.VideoCapture(0)
+                self.show()
+        else:
+            self.check_display = 0
+            self.usage.cap.release()
 
-                # Creating display space for image/camera view
-                self.display.delete("IMG")
 
-                self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
-                self.display.update()
+    def show(self):
+        if self.usage.cap.isOpened():
+            img, _ = self.usage.get_center()
 
-                if cv2.waitKey(10) & 0xFF == 27:
-                    self.usage.cap.release()
-                    cv2.destroyAllWindows()
-                    break
+            self.original_frame = Image.fromarray(img)
+            self.frame = ImageTk.PhotoImage(self.original_frame)
+            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
+            self.display.after(1, self.show)
 
 
     # gui suppport methods
@@ -298,6 +298,7 @@ class Application(tk.Frame):
         # initializing camera module
         self.usage = Camera.camera()
         self.initGui()
+        self.check_display = 0
 
     def initGui(self):
         self.parent.title("Camera Paint")
