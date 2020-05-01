@@ -104,8 +104,7 @@ class camera:
     """
 
     def scan_object_fast(self):
-        cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Scan', 800, 600)
+
 
         while self.cap.isOpened():
             ret, frame = self.cap.read()
@@ -115,12 +114,14 @@ class camera:
             if self.histogram_created_check is False:
                 frame = self.draw_place(frame)
 
-            cv2.imshow('Scan', frame)
+            cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
+            cv2.window
 
             if cv2.waitKey(1) & 0xFF == 32:
                 self.histogram_created_check = True
                 self.histogram, _ = self.create_histogram(frame)
                 break
+            cv2.destroyAllWindows()
         cv2.destroyAllWindows()
         return self.histogram
 

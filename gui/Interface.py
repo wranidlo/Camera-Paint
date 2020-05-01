@@ -95,8 +95,21 @@ class Application(tk.Frame):
         # TODO implementation of camera configuration (CAMERA MODULE)
 
     def toggleViewAction(self):
-        None
-        # TODO implementation of changing views - image and camera (CAMERA MODULE)
+        cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
+        cv2.resizeWindow('Live', 800, 600)
+        while self.usage.cap.isOpened():
+            img, _ = self.usage.get_center()
+            cv2.imshow('Live', img)
+            self.original_frame = Image.fromarray(img)
+            self.frame = ImageTk.PhotoImage(self.original_frame)
+
+            # Creating display space for image/camera view
+            self.display.delete("IMG")
+
+            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
+            self.display.update()
+            if cv2.waitKey(1) & 0xFF == 27:
+                break
 
     # gui suppport methods
 
