@@ -1,9 +1,45 @@
-#from tkinter import *
 import tkinter as tk
 from tkinter import ttk
+from camera import Camera
 from PIL import Image, ImageTk
+import multiprocessing
 
 
+# something from internet, of course doesn't work
+# class Recording():
+#     # -------begin capturing and saving video
+#     def startrecording(e):
+#         cap = cv2.VideoCapture(0)
+#         fourcc = cv2.cv.CV_FOURCC(*'XVID')
+#         out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
+#
+#         while (cap.isOpened()):
+#             if e.is_set():
+#                 cap.release()
+#                 out.release()
+#                 cv2.destroyAllWindows()
+#                 e.clear()
+#             ret, frame = cap.read()
+#             if ret == True:
+#                 out.write(frame)
+#             else:
+#                 break
+#
+#     def start_recording_proc():
+#         global p
+#         p = multiprocessing.Process(target=startrecording, args=(e,))
+#         p.start()
+#
+#     # -------end video capture and stop tk
+#     def stoprecording():
+#         e.set()
+#         p.join()
+#
+#         root.quit()
+#         root.destroy()
+
+
+#Class to displaying tool tips
 class ToolTip(object):
     def __init__(self, widget):
         self.widget = widget
@@ -32,10 +68,22 @@ class ToolTip(object):
             tw.destroy()
 
 
+#main application class
 class Application(tk.Frame):
-    def say_hi(self):
-        print("hi there, everyone!")
 
+    # command methods for buttons etc
+
+    def cameraConfigAction(self):
+        None
+        #TODO implementation of camera configuration (CAMERA MODULE)
+
+    def toggleViewAction(self):
+        None
+        #TODO implementation of changing views - image and camera (CAMERA MODULE)
+
+    #gui suppport methods
+
+    #loading using images to list
     def initializeImages(self):
         # Resizing image to fit on button
         # brushIcon = brushIcon.subsample(10, 10)
@@ -50,6 +98,7 @@ class Application(tk.Frame):
         self.IMAGES['redColour'] = redColour
         #self.IMAGES['greenColour'] = greenColourIcon
 
+    #resizing elements to current window size
     def resize(self, event):
         size = (event.width, event.height)
         resized = self.original_frame.resize(size, Image.ANTIALIAS)
@@ -57,6 +106,7 @@ class Application(tk.Frame):
         self.display.delete("IMG")
         self.display.create_image(0, 0, image=self.image, anchor=tk.NW, tags="IMG")
 
+    #displaying tool tip for widgets
     def createToolTip(self, widget, text="Temp"):
         toolTip = ToolTip(widget)
 
@@ -69,7 +119,9 @@ class Application(tk.Frame):
         widget.bind('<Enter>', enter)
         widget.bind('<Leave>', leave)
 
+    #function creating all frames, buttons, etc in main window
     def createWidgets(self):
+
         #MENUS
 
         #toplevel menu
@@ -122,9 +174,9 @@ class Application(tk.Frame):
         self.IMAGEFRAME.rowconfigure(0, weight=1)
         #(fill=tk.BOTH, expand=True)
 
-        #TOOLS WIDGETS
+        #SUBFRAMES
 
-        #Creating subframes for different categories
+        # Creating subframes for different categories
         self.SUB_TOOLSFRAME_1 = tk.LabelFrame(self.TOOLSFRAME, text="Painting tools", bg="lightcyan")
         self.SUB_TOOLSFRAME_1.grid(row=0, column=0)
         self.SUB_TOOLSFRAME_1.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
@@ -132,10 +184,11 @@ class Application(tk.Frame):
         self.SUB_TOOLSFRAME_2.grid(row=1, column=0)
         self.SUB_TOOLSFRAME_2.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
 
-        #Creating button
+        #TOOLS FRAME WIDGETS
+
+        #Creating tools button
         self.TOOLBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER, bg="lightcyan")
         self.TOOLBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
-        #.pack(side=tk.TOP)
 
         #Creating tools menu
         self.TOOLBUTTON.menu = tk.Menu(self.TOOLBUTTON, tearoff=0)
@@ -146,10 +199,10 @@ class Application(tk.Frame):
         #ToolTip for button
         self.createToolTip(self.TOOLBUTTON, "Tool")
 
-        # Creating button
+        # Creating colour button
         self.COLOURBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['redColour'], compound=tk.CENTER, bg="white")
         self.COLOURBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
-        #pack(side=tk.TOP)
+
         # Creating colour menu
         self.COLOURBUTTON.menu = tk.Menu(self.COLOURBUTTON, tearoff=0)
         self.COLOURBUTTON["menu"] = self.COLOURBUTTON.menu
@@ -160,16 +213,28 @@ class Application(tk.Frame):
         #ToolTip for button
         self.createToolTip(self.COLOURBUTTON, "Colour")
 
-        # Create scan button
-        self.SCANBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="SCAN", anchor=tk.CENTER)
-        self.SCANBUTTON.grid(row=0, column=0, sticky=tk.N)
+        # Creating config button
+        self.CONFIGBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Configuration", anchor=tk.CENTER)
+        self.CONFIGBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
+        self.CONFIGBUTTON["command"] = self.cameraConfigAction
+        # ToolTip for button
+        self.createToolTip(self.CONFIGBUTTON, "Open configuration of camera")
 
-        #IMAGE WIDGETS
+        #Creating toggle button
+        self.TOGGLEBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Toggle view", anchor=tk.CENTER)
+        self.TOGGLEBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
+        self.TOGGLEBUTTON["command"] = self.toggleViewAction
+        # ToolTip for button
+        self.createToolTip(self.TOGGLEBUTTON, "Toggle view between image and camera")
+
+        #IMAGE FRAME WIDGETS
 
         #Creating label with background for image grid
         self.original_frame = Image.open('bird.jpg')
+        #self.original_frame = self.usage.scan_object()
         self.frame = ImageTk.PhotoImage(self.original_frame)
 
+        #Creating display space for image/camera view
         self.display = tk.Canvas(self.IMAGEFRAME, bd=0, highlightthickness=0, bg="white")
         self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
         self.display.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
@@ -192,6 +257,8 @@ class Application(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent, bg="dodgerblue")
         self.parent = parent
+        #initializing camera module
+        self.usage = Camera.camera()
         self.initGui()
 
     def initGui(self):
@@ -199,12 +266,6 @@ class Application(tk.Frame):
         #self.parent.geometry('640x480')
         self.parent.resizable(width=tk.TRUE, height=tk.TRUE)
         self.grid(sticky=tk.W + tk.E + tk.N + tk.S, padx=20, pady=20)
-        #self.pack(fill=tk.BOTH, expand=True, padx=20, pady=20)
-
-        # self.parent.columnconfigure(0, weight=1)
-        # self.parent.rowconfigure(1, weight=1)
-        # self.columnconfigure(0, weight=1)
-        # self.rowconfigure(1, weight=1)
 
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=0)
@@ -213,9 +274,10 @@ class Application(tk.Frame):
         self.initializeImages()
         self.createWidgets()
 
+
+# e = multiprocessing.Event()
+# p = None
 root = tk.Tk()
-# root.title('Camera Paint')
-# root.geometry('640x480')
 app = Application(parent=root)
 app.pack(fill="both", expand=True)
 app.mainloop()
