@@ -90,26 +90,33 @@ class Application(tk.Frame):
 
             self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
             self.display.update()
+        self.usage.cap.release()
 
         cv2.destroyAllWindows()
         # TODO implementation of camera configuration (CAMERA MODULE)
 
     def toggleViewAction(self):
-        cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Live', 800, 600)
-        while self.usage.cap.isOpened():
-            img, _ = self.usage.get_center()
-            cv2.imshow('Live', img)
-            self.original_frame = Image.fromarray(img)
-            self.frame = ImageTk.PhotoImage(self.original_frame)
+        if self.usage.histogram_created_check is True:
+            cv2.namedWindow('Live', cv2.WINDOW_NORMAL)
+            cv2.resizeWindow('Live', 800, 600)
+            self.usage.cap = cv2.VideoCapture(0)
+            while self.usage.cap.isOpened():
+                img, _ = self.usage.get_center()
+                cv2.imshow('Live', img)
+                self.original_frame = Image.fromarray(img)
+                self.frame = ImageTk.PhotoImage(self.original_frame)
 
-            # Creating display space for image/camera view
-            self.display.delete("IMG")
+                # Creating display space for image/camera view
+                self.display.delete("IMG")
 
-            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
-            self.display.update()
-            if cv2.waitKey(1) & 0xFF == 27:
-                break
+                self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
+                self.display.update()
+
+                if cv2.waitKey(10) & 0xFF == 27:
+                    self.usage.cap.release()
+                    cv2.destroyAllWindows()
+                    break
+
 
     # gui suppport methods
 
