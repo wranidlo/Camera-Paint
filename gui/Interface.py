@@ -1,9 +1,8 @@
 import tkinter as tk
-from concurrent.futures.process import ProcessPoolExecutor
-from tkinter import ttk
+import tkinter.ttk as ttk
+from ttkthemes import ThemedStyle
 from camera import Camera
 from PIL import Image, ImageTk
-import multiprocessing
 import cv2
 
 
@@ -194,7 +193,7 @@ class Application(tk.Frame):
         # FRAMES
 
         # left frame for tools
-        self.TOOLSFRAME = tk.Frame(self, width=100, bg="dodgerblue")
+        self.TOOLSFRAME = tk.Frame(self, width=100)
         self.TOOLSFRAME.grid(row=0, column=0, sticky=tk.W, )
         self.TOOLSFRAME.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
         self.TOOLSFRAME.columnconfigure(0, weight=1)
@@ -213,18 +212,17 @@ class Application(tk.Frame):
         # SUBFRAMES
 
         # Creating subframes for different categories
-        self.SUB_TOOLSFRAME_1 = tk.LabelFrame(self.TOOLSFRAME, text="Painting tools", bg="lightcyan")
+        self.SUB_TOOLSFRAME_1 = tk.LabelFrame(self.TOOLSFRAME, text="Painting tools")
         self.SUB_TOOLSFRAME_1.grid(row=0, column=0)
         self.SUB_TOOLSFRAME_1.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
-        self.SUB_TOOLSFRAME_2 = tk.LabelFrame(self.TOOLSFRAME, text="Scanner options", bg="lightcyan")
+        self.SUB_TOOLSFRAME_2 = tk.LabelFrame(self.TOOLSFRAME, text="Scanner options")
         self.SUB_TOOLSFRAME_2.grid(row=1, column=0)
         self.SUB_TOOLSFRAME_2.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
 
         # TOOLS FRAME WIDGETS
 
         # Creating tools button
-        self.TOOLBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER,
-                                        bg="lightcyan")
+        self.TOOLBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER)
         self.TOOLBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
 
         # Creating tools menu
@@ -269,7 +267,6 @@ class Application(tk.Frame):
 
         # Creating label with background for image grid
         self.original_frame = Image.open('bird.jpg')
-        # self.original_frame = self.usage.scan_object()
         self.frame = ImageTk.PhotoImage(self.original_frame)
 
         # Creating display space for image/camera view
@@ -293,8 +290,13 @@ class Application(tk.Frame):
         # self.hi_there.pack({"side": "left"})
 
     def __init__(self, parent):
-        tk.Frame.__init__(self, parent, bg="dodgerblue")
+        tk.Frame.__init__(self, parent)
         self.parent = parent
+        self.IMAGES = {}
+        self.style = ttk.Style()
+        self.style.theme_use('alt')
+        # self.style = ThemedStyle(self.parent)
+        # self.style.set_theme("scidgrey")
         # initializing camera module
         self.usage = Camera.camera()
         self.initGui()
@@ -305,17 +307,17 @@ class Application(tk.Frame):
         self.parent.geometry('840x480')
         self.parent.resizable(width=tk.TRUE, height=tk.TRUE)
         self.grid(sticky=tk.W + tk.E + tk.N + tk.S, padx=20, pady=20)
-
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
-        self.IMAGES = {}
+
         self.initializeImages()
         self.createWidgets()
 
 
-# e = multiprocessing.Event()
-# p = None
+
+# style = ttk.Style()
+# print(style.theme_names())
 root = tk.Tk()
 app = Application(parent=root)
 app.pack(fill="both", expand=True)
