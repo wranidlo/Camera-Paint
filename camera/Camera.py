@@ -125,6 +125,15 @@ class camera:
         cv2.destroyAllWindows()
         return self.histogram
 
+    def search_for_object(self):
+        ret, frame = self.cap.read()
+
+        frame = cv2.flip(frame, 1)
+
+        frame = self.draw_place(frame)
+        self.histogram, _ = self.create_histogram(frame)
+        return frame
+
     def scan_object(self):
         ret, frame = self.cap.read()
 
