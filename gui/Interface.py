@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import colorchooser
 import tkinter.ttk as ttk
 from camera import Camera
 from PIL import Image, ImageTk
@@ -37,6 +38,7 @@ class ToolTip(object):
 
 # main application class
 class Application(tk.Frame):
+    # button commands methods
     def camera_config_action(self):
         if self.check_if_already_showing == 0:
             if self.check_if_configured == 0:
@@ -108,13 +110,18 @@ class Application(tk.Frame):
             self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
             self.display.after(10, self.show_center)
 
+    def color_chooser(self):
+        self.color = colorchooser.askcolor(title="Select color")
+        print(self.color)
+        self.TESTINGCOLORBUTTON.configure(bg=self.color[1])
+
     # gui support methods
 
     # loading using images to list
     def initialize_images(self):
         # Resizing image to fit on button
         # brushIcon = brushIcon.subsample(10, 10)
-        brush = tk.PhotoImage(file=r"brush.png")
+        brush = ImageTk.PhotoImage(file=r"brush.png")
         pencil = tk.PhotoImage(file=r"pencil.png")
         spray = tk.PhotoImage(file=r"spray.png")
         red_colour = tk.PhotoImage(file=r"redColour.png")
@@ -185,17 +192,15 @@ class Application(tk.Frame):
 
         # left frame for tools
         self.TOOLSFRAME = tk.Frame(self, width=100)
-        self.TOOLSFRAME.grid(row=0, column=0, sticky=tk.W, )
-        self.TOOLSFRAME.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+        self.TOOLSFRAME.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
         self.TOOLSFRAME.columnconfigure(0, weight=1)
-        self.TOOLSFRAME.rowconfigure(0, weight=1)
-        self.TOOLSFRAME.rowconfigure(1, weight=1)
+        # self.TOOLSFRAME.rowconfigure(0, weight=1)
+        # self.TOOLSFRAME.rowconfigure(1, weight=1)
         # (anchor=tk.N, fill=tk.BOTH, expand=False, side=tk.LEFT)
 
         # central frame for image
         self.IMAGEFRAME = tk.Frame(self, width=540, height=380)
-        self.IMAGEFRAME.grid(row=0, column=1)
-        self.IMAGEFRAME.grid(sticky=tk.W + tk.E + tk.N + tk.S)
+        self.IMAGEFRAME.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
         self.IMAGEFRAME.columnconfigure(0, weight=1)
         self.IMAGEFRAME.rowconfigure(0, weight=1)
         # (fill=tk.BOTH, expand=True)
@@ -203,18 +208,20 @@ class Application(tk.Frame):
         # SUBFRAMES
 
         # Creating subframes for different categories
-        self.SUB_TOOLSFRAME_1 = tk.LabelFrame(self.TOOLSFRAME, text="Painting tools")
-        self.SUB_TOOLSFRAME_1.grid(row=0, column=0)
-        self.SUB_TOOLSFRAME_1.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
-        self.SUB_TOOLSFRAME_2 = tk.LabelFrame(self.TOOLSFRAME, text="Scanner options")
-        self.SUB_TOOLSFRAME_2.grid(row=1, column=0)
-        self.SUB_TOOLSFRAME_2.grid(sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
+        self.SUB_TOOLSFRAME_1 = tk.Frame(self.TOOLSFRAME, highlightbackground="grey", highlightthickness=1, bg="white")
+        self.SUB_TOOLSFRAME_1.grid(row=1, column=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
+        self.SUB_TOOLSFRAME_2 = tk.Frame(self.TOOLSFRAME, bd=1, highlightbackground="grey", highlightthickness=1, bg="white")
+        self.SUB_TOOLSFRAME_2.grid(row=4, column=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
 
         # TOOLS FRAME WIDGETS
 
+        # Creating SUB_TOOLSFRAME_1 label
+        self.SUB_TOOLSFRAME_1_LABEL = tk.Label(self.TOOLSFRAME, text="Painting tools", anchor=tk.N)
+        self.SUB_TOOLSFRAME_1_LABEL.grid(row=0, column=0, sticky=tk.W, padx=5)
+
         # Creating tools button
-        self.TOOLBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER)
-        self.TOOLBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
+        self.TOOLBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER, bg="white")
+        self.TOOLBUTTON.grid(row=0, column=0, padx=5, pady=5, sticky=tk.N + tk.S + tk.W + tk.E)
 
         # Creating tools menu
         self.TOOLBUTTON.menu = tk.Menu(self.TOOLBUTTON, tearoff=0)
@@ -226,31 +233,43 @@ class Application(tk.Frame):
         self.create_tool_tip(self.TOOLBUTTON, "Tool")
 
         # Creating colour button
-        self.COLOURBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['redColour'],
-                                          compound=tk.CENTER, bg="white")
-        self.COLOURBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
+        self.COLOURBUTTON = tk.Button(self.SUB_TOOLSFRAME_1, image=self.IMAGES['redColour'], compound=tk.CENTER, bg="white")
+        self.COLOURBUTTON["command"] = self.color_chooser
+        self.COLOURBUTTON.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+
+        # TESTING button
+        self.TESTINGCOLORBUTTON = tk.Button(self.SUB_TOOLSFRAME_1, text="current color", compound=tk.CENTER, bg="red")
+        self.TESTINGCOLORBUTTON.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
 
         # Creating colour menu
-        self.COLOURBUTTON.menu = tk.Menu(self.COLOURBUTTON, tearoff=0)
-        self.COLOURBUTTON["menu"] = self.COLOURBUTTON.menu
-        self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
+        # self.COLOURBUTTON.menu = tk.Menu(self.COLOURBUTTON, tearoff=0)
+        # self.COLOURBUTTON["menu"] = self.COLOURBUTTON.menu
+        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
+        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
+        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
+        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
         # ToolTip for button
         self.create_tool_tip(self.COLOURBUTTON, "Colour")
 
+        # Creating separator beetwen sub frames
+        self.SEPARATOR_BETWEEN_TOOLSFRAMES = tk.Label(self.TOOLSFRAME, text="", height=1)
+        self.SEPARATOR_BETWEEN_TOOLSFRAMES.grid(row=2, column=0)
+
+        # Creating SUB_TOOLSFRAME_2 label
+        self.SUB_TOOLSFRAME_2_LABEL = tk.Label(self.TOOLSFRAME, text="Scanner options", anchor=tk.N)
+        self.SUB_TOOLSFRAME_2_LABEL.grid(row=3, column=0, sticky=tk.W, padx=5)
+
         # Creating config button
-        self.CONFIGBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Scan", anchor=tk.CENTER, bg="green")
-        self.CONFIGBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
+        self.CONFIGBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Scan", anchor=tk.CENTER, width=9, bg="green")
         self.CONFIGBUTTON["command"] = self.camera_config_action
+        self.CONFIGBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.CONFIGBUTTON, "Start scanning object")
 
         # Creating toggle button
         self.TOGGLEBUTTON= tk.Button(self.SUB_TOOLSFRAME_2, text="Toggle view", anchor=tk.CENTER, bg="green")
-        self.TOGGLEBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
         self.TOGGLEBUTTON["command"] = self.toggle_view_action
+        self.TOGGLEBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.TOGGLEBUTTON, "Toggle view between image and camera")
 
@@ -311,6 +330,8 @@ class Application(tk.Frame):
 # print(style.theme_names())
 
 
+im = Image.open("redColour.png")
+print(im.mode)
 root = tk.Tk()
 app = Application(parent=root)
 app.pack(fill="both", expand=True)
