@@ -1,62 +1,27 @@
 import tkinter as tk
 import tkinter.ttk as ttk
-from ttkthemes import ThemedStyle
 from camera import Camera
 from PIL import Image, ImageTk
 import cv2
-
-
-# something from internet, of course doesn't work
-# class Recording():
-#     # -------begin capturing and saving video
-#     def startrecording(e):
-#         cap = cv2.VideoCapture(0)
-#         fourcc = cv2.cv.CV_FOURCC(*'XVID')
-#         out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
-#
-#         while (cap.isOpened()):
-#             if e.is_set():
-#                 cap.release()
-#                 out.release()
-#                 cv2.destroyAllWindows()
-#                 e.clear()
-#             ret, frame = cap.read()
-#             if ret == True:
-#                 out.write(frame)
-#             else:
-#                 break
-#
-#     def start_recording_proc():
-#         global p
-#         p = multiprocessing.Process(target=startrecording, args=(e,))
-#         p.start()
-#
-#     # -------end video capture and stop tk
-#     def stoprecording():
-#         e.set()
-#         p.join()
-#
-#         root.quit()
-#         root.destroy()
 
 
 # Class to displaying tool tips
 class ToolTip(object):
     def __init__(self, widget):
         self.widget = widget
-        self.tipwindow = None
+        self.tip_window = None
         self.id = None
         self.x = self.y = 0
 
     def showtip(self, text):
         # "Display text in tooltip window"
         self.text = text
-        if self.tipwindow or not self.text:
+        if self.tip_window or not self.text:
             return
         x, y, cx, cy = self.widget.bbox("insert")
         x = x + self.widget.winfo_rootx() + 37
         y = y + cy + self.widget.winfo_rooty() + 27
-        self.tipwindow = tw = tk.Toplevel(self.widget)
+        self.tip_window = tw = tk.Toplevel(self.widget)
         tw.wm_overrideredirect(1)
         tw.wm_geometry("+%d+%d" % (x, y))
         label = tk.Label(tw, text=self.text, justify=tk.LEFT, relief=tk.SOLID, borderwidth=1,
@@ -64,18 +29,32 @@ class ToolTip(object):
         label.pack(ipadx=1)
 
     def hidetip(self):
-        tw = self.tipwindow
-        self.tipwindow = None
+        tw = self.tip_window
+        self.tip_window = None
         if tw:
             tw.destroy()
 
 
 # main application class
 class Application(tk.Frame):
+    def camera_config_action(self):
+        if self.check_if_already_showing == 0:
+            if self.check_if_configured == 0:
+                self.check_if_configured = 1
 
-    # command methods for buttons etc
+                self.CONFIGBUTTON.config(text="Stop", bg="red")
 
-    def cameraConfigAction(self):
+                self.usage.set_histogram_created_check_not()
+                self.usage.cap = cv2.VideoCapture(0)
+                self.show_config()
+            else:
+                self.CONFIGBUTTON.config(text="Scan", bg="green")
+
+                self.usage.histogram_created_check = True
+                self.check_if_configured = 0
+                self.usage.cap.release()
+
+        """
         self.usage.set_histogram_created_check_not()
         cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
         cv2.resizeWindow('Scan', 800, 600)
@@ -94,44 +73,56 @@ class Application(tk.Frame):
         self.usage.cap.release()
 
         cv2.destroyAllWindows()
+        """
 
-    def toggleViewAction(self):
-        if self.check_display == 0:
+    def show_config(self):
+        if self.usage.cap.isOpened():
+            frame = self.usage.search_for_object()
+            self.display.delete("IMG")
+            self.original_frame = Image.fromarray(frame)
+            self.frame = ImageTk.PhotoImage(self.original_frame)
+            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
+            self.display.after(10, self.show_config)
+
+    def toggle_view_action(self):
+        if self.check_if_already_showing == 0:
             if self.usage.histogram_created_check is True:
                 print("here")
-                self.check_display = 1
+                self.check_if_already_showing = 1
                 self.usage.cap = cv2.VideoCapture(0)
-                self.show()
+
+                self.TOGGLEBUTTON.config(text="Stop view",bg="red")
+
+                self.show_center()
         else:
-            self.check_display = 0
+            self.TOGGLEBUTTON.config(text="Toggle view", bg="green")
+            self.check_if_already_showing = 0
             self.usage.cap.release()
 
-
-    def show(self):
+    def show_center(self):
         if self.usage.cap.isOpened():
             img, _ = self.usage.get_center()
 
             self.original_frame = Image.fromarray(img)
             self.frame = ImageTk.PhotoImage(self.original_frame)
             self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
-            self.display.after(1, self.show)
+            self.display.after(10, self.show_center)
 
-
-    # gui suppport methods
+    # gui support methods
 
     # loading using images to list
-    def initializeImages(self):
+    def initialize_images(self):
         # Resizing image to fit on button
         # brushIcon = brushIcon.subsample(10, 10)
         brush = tk.PhotoImage(file=r"brush.png")
         pencil = tk.PhotoImage(file=r"pencil.png")
         spray = tk.PhotoImage(file=r"spray.png")
-        redColour = tk.PhotoImage(file=r"redColour.png")
+        red_colour = tk.PhotoImage(file=r"redColour.png")
         # greenColourIcon = tk.PhotoImage(file=r"greenColourIcon2.png")
         self.IMAGES['brush'] = brush
         self.IMAGES['pencil'] = pencil
         self.IMAGES['spray'] = spray
-        self.IMAGES['redColour'] = redColour
+        self.IMAGES['redColour'] = red_colour
         # self.IMAGES['greenColour'] = greenColourIcon
 
     # resizing elements to current window size
@@ -143,7 +134,7 @@ class Application(tk.Frame):
         self.display.create_image(0, 0, image=self.image, anchor=tk.NW, tags="IMG")
 
     # displaying tool tip for widgets
-    def createToolTip(self, widget, text="Temp"):
+    def create_tool_tip(self, widget, text="Temp"):
         toolTip = ToolTip(widget)
 
         def enter(event):
@@ -156,7 +147,7 @@ class Application(tk.Frame):
         widget.bind('<Leave>', leave)
 
     # function creating all frames, buttons, etc in main window
-    def createWidgets(self):
+    def create_widgets(self):
         # MENUS
 
         # toplevel menu
@@ -232,7 +223,7 @@ class Application(tk.Frame):
         self.TOOLBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['pencil'])
         self.TOOLBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['spray'])
         # ToolTip for button
-        self.createToolTip(self.TOOLBUTTON, "Tool")
+        self.create_tool_tip(self.TOOLBUTTON, "Tool")
 
         # Creating colour button
         self.COLOURBUTTON = tk.Menubutton(self.SUB_TOOLSFRAME_1, bd=0, image=self.IMAGES['redColour'],
@@ -247,21 +238,21 @@ class Application(tk.Frame):
         self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
         self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
         # ToolTip for button
-        self.createToolTip(self.COLOURBUTTON, "Colour")
+        self.create_tool_tip(self.COLOURBUTTON, "Colour")
 
         # Creating config button
-        self.CONFIGBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Configuration", anchor=tk.CENTER)
+        self.CONFIGBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Scan", anchor=tk.CENTER, bg="green")
         self.CONFIGBUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
-        self.CONFIGBUTTON["command"] = self.cameraConfigAction
+        self.CONFIGBUTTON["command"] = self.camera_config_action
         # ToolTip for button
-        self.createToolTip(self.CONFIGBUTTON, "Open configuration of camera")
+        self.create_tool_tip(self.CONFIGBUTTON, "Start scanning object")
 
         # Creating toggle button
-        self.TOGGLEBUTTON = tk.Button(self.SUB_TOOLSFRAME_2, text="Toggle view", anchor=tk.CENTER)
+        self.TOGGLEBUTTON= tk.Button(self.SUB_TOOLSFRAME_2, text="Toggle view", anchor=tk.CENTER, bg="green")
         self.TOGGLEBUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
-        self.TOGGLEBUTTON["command"] = self.toggleViewAction
+        self.TOGGLEBUTTON["command"] = self.toggle_view_action
         # ToolTip for button
-        self.createToolTip(self.TOGGLEBUTTON, "Toggle view between image and camera")
+        self.create_tool_tip(self.TOGGLEBUTTON, "Toggle view between image and camera")
 
         # IMAGE FRAME WIDGETS
 
@@ -300,7 +291,8 @@ class Application(tk.Frame):
         # initializing camera module
         self.usage = Camera.camera()
         self.initGui()
-        self.check_display = 0
+        self.check_if_already_showing = 0
+        self.check_if_configured = 0
 
     def initGui(self):
         self.parent.title("Camera Paint")
@@ -311,15 +303,20 @@ class Application(tk.Frame):
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
 
-        self.initializeImages()
-        self.createWidgets()
-
+        self.initialize_images()
+        self.create_widgets()
 
 
 # style = ttk.Style()
 # print(style.theme_names())
+
+
 root = tk.Tk()
 app = Application(parent=root)
 app.pack(fill="both", expand=True)
 app.mainloop()
-root.destroy()
+try:
+    root.destroy()
+except tk.TclError:
+    "App already closed"
+
