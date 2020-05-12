@@ -2,10 +2,22 @@ import cv2
 import imutils
 import numpy as np
 import random
+from enum import Enum
 
 # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #          BRUSHES MODULE
 # \/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/
+
+# ----------------------------------
+#               ENUMS
+# ----------------------------------
+
+
+class SelectionTypes(Enum):
+    PICK = 0    # Overwrite current selection
+    ADD = 1     # Add to current selection
+    SUB = 2     # Subtract from current selection
+    MUL = 3    # Leave only shared selection
 
 # ----------------------------------
 #         VARIABLES & CLASSES
@@ -13,8 +25,17 @@ import random
 size_x = 380
 size_y = 540
 
+selection_type = SelectionTypes.PICK
+selection_exists = False
+
+# The canvas that stores actual image
 canvas_matrix = np.empty((size_x, size_y, 3), dtype='uint8')
 canvas_matrix.fill(255)
+
+# Matrix that stores selected pixels locations
+selection_matrix = np.empty((size_x, size_y), dtype='bool_')
+selection_matrix.fill(False)
+
 step = [canvas_matrix]
 
 
@@ -93,6 +114,64 @@ def save_step():
     global step
     step.append(canvas_matrix)
 
+
+def selector_Rect(start_pos, end_pos):  # expected tuple(x, y) as position
+    global selection_exists
+
+    h_flip = False  # horizontal iteration direction
+    v_flip = False  # vertical iteration direction
+
+    if start_pos[0] < end_pos[0]:
+        h_flip = True
+    if start_pos[1] < end_pos[1]:
+        v_flip = True
+
+    selection = np.empty((size_x, size_y), dtype='bool_')
+    selection.fill(False)
+
+    row_range = [0, 0]
+    column_range = [0, 0]
+
+    if not h_flip:
+        row_range = [start_pos[0], end_pos[0]]
+    else:
+        row_range = [end_pos[0], start_pos[0]]
+
+    if not v_flip:
+        column_range = [start_pos[1], end_pos[1]]
+    else:
+        column_range = [end_pos[1], start_pos[1]]
+
+    for i in range(row_range[0], row_range[1] + 1):
+        for j in range(column_range[0], column_range[1] + 1):
+            selection[i][j] = True
+
+    join_new_selection(selection)
+    selection_exists = is_selection_empty(selection_matrix)
+    return
+
+def selector_ColorPicker(picker_pos, margin:float):   # expected tuple(x, y) as position, float 0.0 - 1.0 as margin
+    global selection_exists
+
+    color = canvas_matrix[picker_pos[0]][picker_pos[1]]
+
+    selection = np.empty((size_x, size_y), dtype='bool_')
+    selection.fill(False)
+
+    for x in range(0, len(canvas_matrix)):
+        for y in range(0, len(canvas_matrix[0])):
+            if compare_colors(color, canvas_matrix[x][y], margin):
+                selection[x][y] = True
+            else:
+                selection[x][y] = False
+
+    join_new_selection(selection)
+    selection_exists = is_selection_empty(selection_matrix)
+    return
+
+def selector_MagicWand():   # TO DO!!!!!!
+    pass
+
 # ----------------------------------
 #         UTILITY FUNCTIONS
 # ----------------------------------
@@ -115,6 +194,69 @@ def limit_color_value(value:int) -> int:  # prevent color value overflow
         return 255
     else:
         return value
+
+# SELECTION SECTION
+
+
+def is_selection_empty(selection):
+    for x in range(0, len(selection)):
+        for y in range(0, len(selection[0])):
+            if selection[x][y]:
+                return True
+    return False
+
+
+def join_new_selection(new_selection):
+    global selection_matrix
+    global selection_exists
+
+    if selection_type == SelectionTypes.PICK:   # Just overwrite selection and let the system know that it exists
+        selection_matrix = new_selection
+        return
+    elif selection_type == SelectionTypes.ADD:
+        if not selection_exists:    # if selection doesn't exist, just behave as PICK mode
+            selection_matrix = new_selection
+            return
+        else: # if selection exists, add all new pixels
+            for x in range(0, len(selection_matrix)):
+                for y in range(0, len(selection_matrix[0])):
+                    if new_selection[x][y]:
+                        selection_matrix[x][y] = True
+            return
+    elif selection_type == SelectionTypes.SUB:
+        if selection_exists:        # if selection exists, subtract all new pixels
+            for x in range(0, len(selection_matrix)):
+                for y in range(0, len(selection_matrix[0])):
+                    if new_selection[x][y]:
+                        selection_matrix[x][y] = False
+            return
+        else:       # if selection doesn't exist, there's nothing to subtract
+            return
+    elif selection_type == SelectionTypes.MUL:
+        if selection_exists:
+            for x in range(0, len(selection_matrix)):
+                for y in range(0, len(selection_matrix[0])):
+                    if new_selection[x][y] and selection_matrix[x][y]:
+                        selection_matrix[x][y] = True
+                    else:
+                        selection_matrix[x][y] = False
+            return
+        else:       # if selection doesn't exist, there's nothing to multiply
+            return
+
+def true_color_value(color) -> float:
+    return (color[0] + color[1] + color[2]) / 3.0
+
+def compare_colors(original_color, new_color, margin) -> bool:
+    origin_value = true_color_value(original_color)
+    new_value = true_color_value(new_color)
+
+    if origin_value - (255 * margin) <= new_value <= origin_value + (255 * margin):
+        return True
+    else:
+        return False
+
+
 
 draw(0,0,b_pencil,[255,0,0])
 draw(200,200,b_pencil,[255,0,0])
