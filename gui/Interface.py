@@ -4,6 +4,7 @@ import tkinter.ttk as ttk
 from camera import Camera
 from PIL import Image, ImageTk
 import cv2
+import brushes.Brushes as br
 
 
 # Class to displaying tool tips
@@ -276,11 +277,11 @@ class Application(tk.Frame):
         # IMAGE FRAME WIDGETS
 
         # Creating label with background for image grid
-        self.original_frame = Image.open('bird.jpg')
+        self.original_frame = Image.fromarray(br.canvas_matrix)
         self.frame = ImageTk.PhotoImage(self.original_frame)
 
         # Creating display space for image/camera view
-        self.display = tk.Canvas(self.IMAGEFRAME, bd=0, highlightthickness=0, bg="white")
+        self.display = tk.Canvas(self.IMAGEFRAME, bd=0, highlightthickness=0, bg="black")
         self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
         self.display.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
         self.IMAGEFRAME.bind("<Configure>", self.resize)

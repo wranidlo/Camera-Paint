@@ -10,9 +10,8 @@ import random
 # ----------------------------------
 #         VARIABLES & CLASSES
 # ----------------------------------
-size_x = 1000
-size_y = 1000
-
+size_x = 380
+size_y = 540
 
 canvas_matrix = np.empty((size_x, size_y, 3), dtype='uint8')
 canvas_matrix.fill(255)
@@ -62,18 +61,21 @@ class Brush(object):
             for j in range(len(rotated_brush[i])):
                 rotated_brush[i][j] *= self.opacity
                 rotated_brush[i][j] /= 255.0
+        for i in range(len(self.shape_matrix)):
+            for j in range(len(self.shape_matrix[i])):
+                self.shape_matrix[i][j] /= 255.0
         return rotated_brush
 
 
 # pre-defined brushes
 influence_pencil = np.full((11, 11), 1.0)
-b = Brush(influence_pencil, 10, 1, 30, 1.0)
+b = Brush(influence_pencil, 10, 1, 0, 1.0)
 b_pencil = b.get_transformed_brush()
-
 
 # ----------------------------------
 #           MAIN FUNCTIONS
 # ----------------------------------
+
 
 def draw(x: int, y: int, shape, color):
     global canvas_matrix
@@ -86,6 +88,10 @@ def draw(x: int, y: int, shape, color):
                     c = limit_color_value(int(canvas_matrix[x+i, y+j, k]*(1-shape[i, j]))+(int(shape[i, j]*color[k])))
                     canvas_matrix[x+i, y+j, k] = c
 
+
+def save_step():
+    global step
+    step.append(canvas_matrix)
 
 # ----------------------------------
 #         UTILITY FUNCTIONS
@@ -109,3 +115,11 @@ def limit_color_value(value:int) -> int:  # prevent color value overflow
         return 255
     else:
         return value
+
+draw(0,0,b_pencil,[255,0,0])
+draw(200,200,b_pencil,[255,0,0])
+
+
+# while 1:
+   #  cv2.imshow('i',canvas_matrix)
+   #  cv2.waitKey(1)
