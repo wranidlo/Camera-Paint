@@ -37,9 +37,13 @@ class ToolTip(object):
             tw.destroy()
 
 
-# main application class
+# MAIN APP CLASS
+
 class Application(tk.Frame):
-    # button commands methods
+
+    # BUTTON COMMANDS METHODS
+
+    # open scan view to configure pointer CAMERA
     def camera_config_action(self):
         if self.check_if_already_showing == 0:
             if self.check_if_configured == 0:
@@ -56,6 +60,18 @@ class Application(tk.Frame):
                 self.usage.histogram_created_check = True
                 self.check_if_configured = 0
                 self.usage.cap.release()
+                self.show_image()
+
+    # displaying current scan view CAMERA
+    def show_config(self):
+        if self.usage.cap.isOpened():
+            frame = self.usage.search_for_object()
+            self.display.delete("IMG")
+            self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(frame)
+            self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
+            self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+            self.resize(self.display)
+            self.display.after(10, self.show_config)
 
         """
         self.usage.set_histogram_created_check_not()
@@ -78,15 +94,7 @@ class Application(tk.Frame):
         cv2.destroyAllWindows()
         """
 
-    def show_config(self):
-        if self.usage.cap.isOpened():
-            frame = self.usage.search_for_object()
-            self.display.delete("IMG")
-            self.original_frame = Image.fromarray(frame)
-            self.frame = ImageTk.PhotoImage(self.original_frame)
-            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
-            self.display.after(10, self.show_config)
-
+    # open camera view CAMERA
     def toggle_view_action(self):
         if self.check_if_already_showing == 0:
             if self.usage.histogram_created_check is True:
@@ -101,22 +109,32 @@ class Application(tk.Frame):
             self.TOGGLEBUTTON.config(text="Toggle view", bg="green")
             self.check_if_already_showing = 0
             self.usage.cap.release()
+            self.show_image()
 
+    # displaying current camera view CAMERA
     def show_center(self):
         if self.usage.cap.isOpened():
             img, _ = self.usage.get_center()
 
-            self.original_frame = Image.fromarray(img)
-            self.frame = ImageTk.PhotoImage(self.original_frame)
-            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
+            self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(img)
+            self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
+            self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+            self.resize(self.display)
             self.display.after(10, self.show_center)
 
+    # displaying image BRUSHES
+    def show_image(self):
+        self.refresh_image()
+        self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+        self.resize(self.display)
+
+    # opening color_chooser window
     def color_chooser(self):
         self.color = colorchooser.askcolor(title="Select color")
         print(self.color)
         self.TESTINGCOLORBUTTON.configure(bg=self.color[1])
 
-    # gui support methods
+    # GUI SUPPORT METHODS
 
     # loading using images to list
     def initialize_images(self):
@@ -133,13 +151,29 @@ class Application(tk.Frame):
         self.IMAGES['redColour'] = red_colour
         # self.IMAGES['greenColour'] = greenColourIcon
 
-    # resizing elements to current window size
-    def resize(self, event):
+    # resizing elements to current widget size after event of changed size
+    def resize_event(self, event):
         size = (event.width, event.height)
-        resized = self.original_frame.resize(size, Image.ANTIALIAS)
-        self.image = ImageTk.PhotoImage(resized)
+        self.OBJECT_TO_DISPLAY_IMAGE = self.OBJECT_TO_DISPLAY_IMAGE.resize(size, Image.ANTIALIAS)
+        self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
+        # scale_w = event.width / self.OBJECT_TO_DISPLAY.width()
+        # scale_h = event.height / self.OBJECT_TO_DISPLAY.height()
+        # self.OBJECT_TO_DISPLAY.zoom(scale_w, scale_h)
         self.display.delete("IMG")
-        self.display.create_image(0, 0, image=self.image, anchor=tk.NW, tags="IMG")
+        self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+
+    # resizing elements to current widget size, for not event cases (toogle view for example)
+    def resize(self, canvas):
+        size = (canvas.winfo_width(), canvas.winfo_height())
+        self.OBJECT_TO_DISPLAY_IMAGE = self.OBJECT_TO_DISPLAY_IMAGE.resize(size, Image.ANTIALIAS)
+        self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
+        self.display.delete("IMG")
+        self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+
+    # load current image state from brushes module
+    def refresh_image(self):
+        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(br.canvas_matrix)
+        self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
 
     # displaying tool tip for widgets
     def create_tool_tip(self, widget, text="Temp"):
@@ -154,7 +188,8 @@ class Application(tk.Frame):
         widget.bind('<Enter>', enter)
         widget.bind('<Leave>', leave)
 
-    # function creating all frames, buttons, etc in main window
+    # CREATING ALL WIDGETS IN MAIN WINDOW
+
     def create_widgets(self):
         # MENUS
 
@@ -237,20 +272,12 @@ class Application(tk.Frame):
         self.COLOURBUTTON = tk.Button(self.SUB_TOOLSFRAME_1, image=self.IMAGES['redColour'], compound=tk.CENTER, bg="white")
         self.COLOURBUTTON["command"] = self.color_chooser
         self.COLOURBUTTON.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+        # ToolTip for button
+        self.create_tool_tip(self.COLOURBUTTON, "Colour")
 
         # TESTING button
         self.TESTINGCOLORBUTTON = tk.Button(self.SUB_TOOLSFRAME_1, text="current color", compound=tk.CENTER, bg="red")
         self.TESTINGCOLORBUTTON.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
-
-        # Creating colour menu
-        # self.COLOURBUTTON.menu = tk.Menu(self.COLOURBUTTON, tearoff=0)
-        # self.COLOURBUTTON["menu"] = self.COLOURBUTTON.menu
-        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        # self.COLOURBUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['redColour'])
-        # ToolTip for button
-        self.create_tool_tip(self.COLOURBUTTON, "Colour")
 
         # Creating separator beetwen sub frames
         self.SEPARATOR_BETWEEN_TOOLSFRAMES = tk.Label(self.TOOLSFRAME, text="", height=1)
@@ -276,29 +303,11 @@ class Application(tk.Frame):
 
         # IMAGE FRAME WIDGETS
 
-        # Creating label with background for image grid
-        self.original_frame = Image.fromarray(br.canvas_matrix)
-        self.frame = ImageTk.PhotoImage(self.original_frame)
-
         # Creating display space for image/camera view
         self.display = tk.Canvas(self.IMAGEFRAME, bd=0, highlightthickness=0, bg="black")
-        self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
+        self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
         self.display.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
-        self.IMAGEFRAME.bind("<Configure>", self.resize)
-
-        # tutorial buttons
-        # self.QUIT = tk.Button(self)
-        # self.QUIT["text"] = "QUIT"
-        # self.QUIT["fg"]   = "red"
-        # self.QUIT["command"] =  self.quit
-        #
-        # self.QUIT.pack({"side": "left"})
-        #
-        # self.hi_there = tk.Button(self)
-        # self.hi_there["text"] = "Hello",
-        # self.hi_there["command"] = self.say_hi
-        #
-        # self.hi_there.pack({"side": "left"})
+        self.IMAGEFRAME.bind("<Configure>", self.resize_event)
 
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -310,6 +319,8 @@ class Application(tk.Frame):
         # self.style.set_theme("scidgrey")
         # initializing camera module
         self.usage = Camera.camera()
+        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(br.canvas_matrix)
+        self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.initGui()
         self.check_if_already_showing = 0
         self.check_if_configured = 0
