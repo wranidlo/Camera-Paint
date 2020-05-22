@@ -163,6 +163,7 @@ class camera:
             contour_list = contours(hist_masked_image)
             try:
                 max_cont = max(contour_list, key=cv2.contourArea)
+                self.last_max_contour = max_cont
             except ValueError:
                 print("out")
                 max_cont = self.last_max_contour
@@ -172,6 +173,15 @@ class camera:
             frame = self.draw_place(frame)
 
         return frame, cnt_centroid
+
+    def check_quality(self, frame):
+        hist_masked_image = masking_histogram(frame, self.histogram)
+        erode_kernel = np.ones((5, 5), np.uint8)
+        dilate_kernel = np.ones((5, 5), np.uint8)
+        hist_masked_image = cv2.erode(hist_masked_image, erode_kernel)
+        hist_masked_image = cv2.dilate(hist_masked_image, dilate_kernel)
+        contour_list = contours(hist_masked_image)
+        return len(contour_list)
 
 
 def main():

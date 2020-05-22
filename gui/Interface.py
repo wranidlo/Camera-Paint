@@ -66,6 +66,13 @@ class Application(tk.Frame):
     def show_config(self):
         if self.usage.cap.isOpened():
             frame = self.usage.search_for_object()
+            if self.usage.check_quality(frame) == 1:
+                cv2.putText(frame, "Good", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 255, 0),
+                            thickness=2)
+            else:
+                cv2.putText(frame, "Bad", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 255),
+                            thickness=2)
+            frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             self.display.delete("IMG")
             self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(frame)
             self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
