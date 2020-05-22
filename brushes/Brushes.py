@@ -3,6 +3,7 @@ import imutils
 import numpy as np
 import random
 from enum import Enum
+import time
 
 # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
 #          BRUSHES MODULE
@@ -31,6 +32,8 @@ selection_exists = False
 # The canvas that stores actual image
 canvas_matrix = np.empty((size_x, size_y, 3), dtype='uint8')
 canvas_matrix.fill(255)
+
+canvas_matrix_temp = np.empty((size_x, size_y, 3), dtype='uint8')
 
 # Matrix that stores selected pixels locations
 selection_matrix = np.empty((size_x, size_y), dtype='bool_')
@@ -90,8 +93,20 @@ class Brush(object):
 
 # pre-defined brushes
 influence_pencil = np.full((11, 11), 1.0)
-b = Brush(influence_pencil, 10, 1, 0, 1.0)
-b_pencil = b.get_transformed_brush()
+b_pencil = Brush(influence_pencil, 10, 1, 0, 1.0)
+pencil = b_pencil.get_transformed_brush()
+influence_brush = np.full((11, 11), 0.0)
+for x in range(0, len(influence_brush)):
+    for y in range(0, len(influence_brush[0])):
+        influence_brush[x, y] = 1 - (((pow((5-x), 2))+(pow((5-y), 2)))/50)
+b_brush = Brush(influence_brush, 10, 1, 0, 1.0)
+brush = b_brush.get_transformed_brush()
+influence_spray = np.full((11,11), 0.0)
+for x in range(0, len(influence_spray)):
+    for y in range(0, len(influence_spray[0])):
+        influence_spray[x, y] = (random.randint(0, 10)/10)
+b_spray = Brush(influence_spray, 10, 1, 0, 1.0)
+spray = b_spray.get_transformed_brush()
 
 # ----------------------------------
 #           MAIN FUNCTIONS
@@ -99,7 +114,7 @@ b_pencil = b.get_transformed_brush()
 
 
 def draw(x: int, y: int, shape, color):
-    global canvas_matrix
+    global canvas_matrix, canvas_matrix_temp
     x = x - int(len(shape) / 2)
     y = y - int(len(shape[0])/2)
     for i in range(0, len(shape)):
@@ -108,6 +123,9 @@ def draw(x: int, y: int, shape, color):
                 for k in range(0, 3):
                     c = limit_color_value(int(canvas_matrix[x+i, y+j, k]*(1-shape[i, j]))+(int(shape[i, j]*color[k])))
                     canvas_matrix[x+i, y+j, k] = c
+    np.copyto(canvas_matrix_temp, canvas_matrix)
+    selection_apply()
+
 
 
 def save_step():
@@ -172,10 +190,11 @@ def selector_ColorPicker(picker_pos, margin:float):   # expected tuple(x, y) as 
 def selector_MagicWand():   # TO DO!!!!!!
     pass
 
+
+
 # ----------------------------------
 #         UTILITY FUNCTIONS
 # ----------------------------------
-
 
 def is_out_of_bounds(image, x: int, y: int) -> bool:  # used to check if brush goes out of bounds
     height = image.shape[0]
@@ -184,7 +203,13 @@ def is_out_of_bounds(image, x: int, y: int) -> bool:  # used to check if brush g
     if x < 0 or x > width or y < 0 or y > height:
         return True
     else:
-        return False
+        if selection_exists:
+            if selection_matrix[x, y]:
+                return False
+            else:
+                return True
+        else:
+            return False
 
 
 def limit_color_value(value:int) -> int:  # prevent color value overflow
@@ -244,8 +269,10 @@ def join_new_selection(new_selection):
         else:       # if selection doesn't exist, there's nothing to multiply
             return
 
+
 def true_color_value(color) -> float:
     return (color[0] + color[1] + color[2]) / 3.0
+
 
 def compare_colors(original_color, new_color, margin) -> bool:
     origin_value = true_color_value(original_color)
@@ -257,11 +284,61 @@ def compare_colors(original_color, new_color, margin) -> bool:
         return False
 
 
+def check_neighbors(x, y):
 
-draw(0,0,b_pencil,[255,0,0])
-draw(200,200,b_pencil,[255,0,0])
+    for temp_x in range(-1, 2):
+        for temp_y in range(-1, 2):
+            if not selection_matrix[x+temp_x, y+temp_y]:
+                return True
+    return False
 
+
+def negative(x, y):
+    global canvas_matrix_temp
+    canvas_matrix_temp[x, y, 0] = 255 - canvas_matrix_temp[x, y, 0]
+    canvas_matrix_temp[x, y, 1] = 255 - canvas_matrix_temp[x, y, 1]
+    canvas_matrix_temp[x, y, 2] = 255 - canvas_matrix_temp[x, y, 2]
+
+
+def selection_apply():
+    for x in range(0, size_x):
+        for y in range(0, size_y):
+            if selection_matrix[x, y]:
+                if x == 0 or x == size_x-1 or y == 0 or y == size_y-1:
+                    negative(x, y)
+                if check_neighbors(x, y):
+                    negative(x, y)
+
+
+
+
+draw(50,50,pencil,[0,0,180])
+draw(100,100,brush,[255,0,0])
+draw(250,250,spray,[0,100,0])
+for z in range(40, 170):
+    for t in range(40, 170):
+        selection_matrix[z, t] = True
+
+
+selection_exists = True
+draw(170,170,spray,[0,100,0])
+start = time.time()
+
+# while (time.time()-start)<5:
+#     cv2.imshow('o', canvas_matrix)
+#     cv2.imshow('i',canvas_matrix_temp)
+#
+#     cv2.waitKey(1)
+
+selection_matrix.fill(False)
+for z in range(0, 110):
+   for t in range(0, 110):
+       selection_matrix[z, t] = True
+
+draw(140, 190, brush, [255, 0, 0])
+draw(0, 0, brush, [255, 0, 0])
 
 # while 1:
-   #  cv2.imshow('i',canvas_matrix)
-   #  cv2.waitKey(1)
+#     cv2.imshow('o', canvas_matrix)
+#     cv2.imshow('i',canvas_matrix_temp)
+#     cv2.waitKey(1)
