@@ -1,9 +1,12 @@
 import tkinter as tk
 from tkinter import colorchooser
+from tkinter import messagebox
 import tkinter.ttk as ttk
-from camera import Camera
+from tkinter import filedialog as fd
 from PIL import Image, ImageTk
 import cv2
+import numpy as np
+from camera import Camera
 import brushes.Brushes as Br
 
 
@@ -163,6 +166,10 @@ class Application(tk.Frame):
             self.SELECTION_BUTTON.config(image=self.IMAGES['colourSelection'])
             self.SELECTION_BUTTON.image = self.IMAGES['colourSelection']
             # TODO connect with BRUSHES
+        elif type == 2:
+            self.SELECTION_BUTTON.config(image=self.IMAGES['wandSelection'])
+            self.SELECTION_BUTTON.image = self.IMAGES['wandSelection']
+            # TODO connect with BRUSHES
 
     def use_fill(self):
         None
@@ -182,20 +189,48 @@ class Application(tk.Frame):
 
     # FILE MENU METHODS
     def new_project(self):
-        None
-        # TODO connect with BRUSHES
+        if self.savedFlag:
+            Br.canvas_matrix = np.empty((Br.size_x, Br.size_y, 3), dtype='uint8')
+            Br.canvas_matrix.fill(255)
+            self.show_image(Br.canvas_matrix)
+        else:
+            response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
+            print(response)
+            if response:
+                self.savedFlag = True
+                self.new_project()
 
     def open_project(self):
-        None
-        # TODO connect with BRUSHES
+        if self.savedFlag:
+            self.path_to_save = fd.askopenfilename(filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg *.jpeg *.jpe *.jfif"),
+                                                                ("GIF", "*.gif"), ("TIFF", "*.tif *.tiff"),
+                                                                ("BMP", "*.bmp")],
+                                            defaultextension="*.png")  # wywołanie okna dialogowego save file
+            if self.path_to_save != "":
+                loaded_image = cv2.imread(self.path_to_save)
+                self.OBJECT_TO_DISPLAY_IMAGE = Image.open(self.path_to_save)
+                self.OBJECT_TO_DISPLAY_IMAGE.load()
+                Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
+                self.show_image(Br.canvas_matrix)
+        else:
+            response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
+            if response:
+                self.savedFlag = True
+                self.open_project()
 
     def save_image(self):
-        None
-        # TODO connect with BRUSHES
+        if self.path_to_save == "":
+            self.save_image_as()
+        else:
+            self.OBJECT_TO_DISPLAY_IMAGE.save(self.path_to_save)
 
     def save_image_as(self):
-        None
-        # TODO connect with BRUSHES
+        self.path_to_save = fd.asksaveasfilename(filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg *.jpeg *.jpe *.jfif"),
+                                                            ("GIF", "*.gif"), ("TIFF", "*.tif *.tiff"), ("BMP", "*.bmp")],
+                                        defaultextension="*.png")  # wywołanie okna dialogowego save file
+
+        if self.path_to_save != "":
+            self.OBJECT_TO_DISPLAY_IMAGE.save(self.path_to_save)
 
     def recent(self):
         None
@@ -236,7 +271,13 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def full_screen(self):
-        None
+        if self.fullScreenStateFlag:
+            self.fullScreenStateFlag = False
+            self.VIEW_MENU.entryconfigure(1, label="Fullscreen")
+        else:
+            self.fullScreenStateFlag = True
+            self.VIEW_MENU.entryconfigure(1, label="Exit fullscreen")
+        self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
         # TODO connect with BRUSHES
 
     # IMAGE MENU METHODS
@@ -263,6 +304,7 @@ class Application(tk.Frame):
     def color_space(self):
         None
         # TODO connect with BRUSHES
+
     # GUI SUPPORT METHODS
 
     # loading using images to list
@@ -273,8 +315,10 @@ class Application(tk.Frame):
         brush = ImageTk.PhotoImage(file=r"data/brush.png")
         pencil = tk.PhotoImage(file=r"data/pencil.png")
         spray = tk.PhotoImage(file=r"data/spray.png")
+        colorPicker = tk.PhotoImage(file=r"data/icons8-colors.png")
         squared_selection = tk.PhotoImage(file=r"data/area.png")
-        colour_selection = tk.PhotoImage(file=r"data/icons8-colors.png")
+        colour_selection = tk.PhotoImage(file=r"data/dropper_2.png")
+        wand_selection = tk.PhotoImage(file=r"data/magic.png")
         fill = tk.PhotoImage(file=r"data/icons8-fill.png")
         dropper = tk.PhotoImage(file=r"data/dropper.png")
         zoom = tk.PhotoImage(file=r"data/search.png")
@@ -283,13 +327,35 @@ class Application(tk.Frame):
         self.IMAGES['brush'] = brush
         self.IMAGES['pencil'] = pencil
         self.IMAGES['spray'] = spray
+        self.IMAGES['colorPicker'] = colorPicker
         self.IMAGES['squaredSelection'] = squared_selection
         self.IMAGES['colourSelection'] = colour_selection
+        self.IMAGES['wandSelection'] = wand_selection
         self.IMAGES['fill'] = fill
         self.IMAGES['pickColor'] = dropper
         self.IMAGES['zoom'] = zoom
         self.IMAGES['text'] = text
         self.IMAGES['redColour'] = red_colour
+
+    # display message box
+    def open_messagebox(self, mode, title, description):
+        if mode == 0:
+            response = messagebox.showerror(title, description)
+        elif mode == 1:
+            response = messagebox.showwarning(title, description)
+        elif mode == 2:
+            response = messagebox.showinfo(title, description)
+        elif mode == 3:
+            response = messagebox.askquestion(title, description)
+        elif mode == 4:
+            response = messagebox.askokcancel(title, description)
+        elif mode == 5:
+            response = messagebox.askretrycancel(title, description)
+        elif mode == 6:
+            response = messagebox.askyesno(title, description)
+        elif mode == 7:
+            response = messagebox.askyesnocancel(title, description)
+        return response
 
     # resizing elements to current widget size after event of changed size
     def resize_event(self, event):
@@ -339,7 +405,7 @@ class Application(tk.Frame):
         self.parent.config(menu=self.MENU)
 
         # file menu
-        self.FILE_MENU = tk.Menu(self.MENU)
+        self.FILE_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='File', menu=self.FILE_MENU)
         self.FILE_MENU.add_command(label='New project', command=lambda: self.new_project())
         self.FILE_MENU.add_command(label='Open project', command=lambda: self.open_project())
@@ -351,7 +417,7 @@ class Application(tk.Frame):
         self.FILE_MENU.add_command(label='Exit', command=self.quit)
 
         # edit menu
-        self.EDIT_MENU = tk.Menu(self.MENU)
+        self.EDIT_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='Edit', menu=self.EDIT_MENU)
         self.EDIT_MENU.add_command(label='Undo', command=lambda: self.undo())
         self.EDIT_MENU.add_command(label='Redo', command=lambda: self.redo())
@@ -361,19 +427,19 @@ class Application(tk.Frame):
         self.EDIT_MENU.add_command(label='Clear', command=lambda: self.clear())
 
         # view menu
-        self.VIEW_MENU = tk.Menu(self.MENU)
+        self.VIEW_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='View', menu=self.VIEW_MENU)
         self.VIEW_MENU.add_command(label='Zoom in/out', command=lambda: self.zoom_view())
         self.VIEW_MENU.add_command(label='Fullscreen', command=lambda: self.full_screen())
 
         # image menu
-        self.IMAGE_MENU = tk.Menu(self.MENU)
+        self.IMAGE_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='Image', menu=self.IMAGE_MENU)
         self.IMAGE_MENU.add_command(label='Size', command=lambda: self.size_image())
         self.IMAGE_MENU.add_command(label='Colors space', command=lambda: self.color_space())
 
         # tools menu
-        self.TOOLS_MENU = tk.Menu(self.MENU)
+        self.TOOLS_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='Tools', menu=self.TOOLS_MENU)
         self.TOOLS_MENU.add_command(label='Tool')
         self.TOOLS_MENU.add_command(label='Color')
@@ -384,7 +450,7 @@ class Application(tk.Frame):
         self.TOOLS_MENU.add_command(label='Text')
 
         # settings menu
-        self.SETTINGS_MENU = tk.Menu(self.MENU)
+        self.SETTINGS_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='Settings', menu=self.SETTINGS_MENU)
         self.SETTINGS_MENU.add_command(label='Preferences', command=lambda: self.preferences())
         self.SETTINGS_MENU.add_command(label='Shortcuts', command=lambda: self.shortcuts())
@@ -439,14 +505,14 @@ class Application(tk.Frame):
         # Creating config button
         self.CONFIG_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Scan", anchor=tk.CENTER, width=9, bg="green",
                                        command=self.camera_config_action)
-        self.CONFIG_BUTTON.grid(row=0, column=0, pady=5, sticky=tk.N)
+        self.CONFIG_BUTTON.grid(row=0, column=0, padx=15, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.CONFIG_BUTTON, "Start scanning object")
 
         # Creating toggle button
         self.TOGGLE_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Toggle view", anchor=tk.CENTER, bg="green",
                                        command=self.toggle_view_action)
-        self.TOGGLE_BUTTON.grid(row=1, column=0, pady=5, sticky=tk.N)
+        self.TOGGLE_BUTTON.grid(row=1, column=0, padx=15, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.TOGGLE_BUTTON, "Toggle view between image and camera")
 
@@ -455,7 +521,7 @@ class Application(tk.Frame):
         # Creating tools button
         self.TOOL_BUTTON = tk.Menubutton(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['brush'], compound=tk.CENTER,
                                         bg="white")
-        self.TOOL_BUTTON.grid(row=0, column=0, padx=5, pady=5, sticky=tk.N + tk.S + tk.W + tk.E)
+        self.TOOL_BUTTON.grid(row=0, column=0, padx=10, pady=5, sticky=tk.N + tk.S + tk.W + tk.E)
 
         # Creating tools menu
         self.TOOL_BUTTON.menu = tk.Menu(self.TOOL_BUTTON, tearoff=0)
@@ -470,15 +536,15 @@ class Application(tk.Frame):
         self.create_tool_tip(self.TOOL_BUTTON, "Tool")
 
         # Creating colour button
-        self.COLOUR_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, text="color", compound=tk.CENTER, bg="white",
+        self.COLOUR_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, image=self.IMAGES['colorPicker'], bd=0, compound=tk.CENTER,
                                       command=self.color_chooser)
-        self.COLOUR_BUTTON.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+        self.COLOUR_BUTTON.grid(row=0, column=1, padx=0, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.COLOUR_BUTTON, "Colour")
 
         self.SELECTION_BUTTON = tk.Menubutton(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['squaredSelection'],
                                               compound=tk.CENTER, bg="white")
-        self.SELECTION_BUTTON.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
+        self.SELECTION_BUTTON.grid(row=1, column=0, padx=10, pady=5, sticky=tk.N)
 
         # Creating selection menu
         self.SELECTION_BUTTON.menu = tk.Menu(self.SELECTION_BUTTON, tearoff=0)
@@ -487,13 +553,15 @@ class Application(tk.Frame):
                                                command=lambda: self.change_selection(0))
         self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['colourSelection'],
                                                command=lambda: self.change_selection(1))
+        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['wandSelection'],
+                                               command=lambda: self.change_selection(2))
         # ToolTip for button
         self.create_tool_tip(self.SELECTION_BUTTON, "Selection")
 
         # Creating fill button
         self.FILL_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['fill'], compound=tk.CENTER, bg="white",
                                        command=lambda: self.use_fill())
-        self.FILL_BUTTON.grid(row=3, column=0, padx=5, pady=5, sticky=tk.N)
+        self.FILL_BUTTON.grid(row=1, column=1, padx=0, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.FILL_BUTTON, "Fill")
 
@@ -501,7 +569,7 @@ class Application(tk.Frame):
         self.PICK_COLOR_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['pickColor'], compound=tk.CENTER,
                                      bg="white",
                                      command=lambda: self.use_pick_color())
-        self.PICK_COLOR_BUTTON.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
+        self.PICK_COLOR_BUTTON.grid(row=2, column=0, padx=10, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.PICK_COLOR_BUTTON, "Pick color")
 
@@ -509,14 +577,14 @@ class Application(tk.Frame):
         self.ZOOM_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['zoom'], compound=tk.CENTER,
                                      bg="white",
                                      command=lambda: self.use_zoom())
-        self.ZOOM_BUTTON.grid(row=5, column=0, padx=5, pady=5, sticky=tk.N)
+        self.ZOOM_BUTTON.grid(row=2, column=1, padx=0, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.ZOOM_BUTTON, "Zoom")
 
         # Creating text button
         self.TEXT_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['text'], compound=tk.CENTER,
                                      bg="white", command=lambda: self.use_text())
-        self.TEXT_BUTTON.grid(row=6, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEXT_BUTTON.grid(row=3, column=0, padx=10, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.TEXT_BUTTON, "Text")
 
@@ -550,9 +618,16 @@ class Application(tk.Frame):
         # self.style = ThemedStyle(self.parent)
         # self.style.set_theme("scidgrey")
         # initializing camera module
+        # VARIABLES
         self.usage = Camera.camera()
         self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
+        self.path_to_save = ""
+        # FLAGS
+        self.fullScreenStateFlag = False
+        self.savedFlag = True
+        # INIT WINDOW
+        self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
         self.init_gui()
         self.check_if_already_showing = 0
         self.check_if_configured = 0
