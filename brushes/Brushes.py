@@ -33,13 +33,15 @@ selection_exists = False
 canvas_matrix = np.empty((size_x, size_y, 3), dtype='uint8')
 canvas_matrix.fill(255)
 
-canvas_matrix_temp = np.empty((size_x, size_y, 3), dtype='uint8')
+canvas_matrix_temp = canvas_matrix.copy()
 
 # Matrix that stores selected pixels locations
 selection_matrix = np.empty((size_x, size_y), dtype='bool_')
 selection_matrix.fill(False)
 
-step = [canvas_matrix]
+step = [canvas_matrix.copy()]
+current_step = 0
+
 
 
 class Brush(object):
@@ -123,14 +125,37 @@ def draw(x: int, y: int, shape, color):
                 for k in range(0, 3):
                     c = limit_color_value(int(canvas_matrix[x+i, y+j, k]*(1-shape[i, j]))+(int(shape[i, j]*color[k])))
                     canvas_matrix[x+i, y+j, k] = c
-    np.copyto(canvas_matrix_temp, canvas_matrix)
-    selection_apply()
-
+    refresh_temp()
 
 
 def save_step():
-    global step
-    step.append(canvas_matrix)
+    global step, current_step, canvas_matrix
+    if current_step != len(step)-1:
+        l = len(step)-1-current_step
+        for x in range(0, l):
+            step.pop()
+    step.append(canvas_matrix.copy())
+    current_step = len(step)-1
+
+
+def b_undo():
+    global canvas_matrix, current_step, step
+    if current_step == 0:
+        return
+    else:
+        current_step = current_step - 1
+        canvas_matrix = step[current_step].copy()
+        refresh_temp()
+
+
+def b_redo():
+    global canvas_matrix, current_step, step
+    if current_step == len(step)-1:
+        return
+    else:
+        current_step = current_step+1
+        canvas_matrix = step[current_step].copy()
+        refresh_temp()
 
 
 def selector_Rect(start_pos, end_pos):  # expected tuple(x, y) as position
@@ -196,11 +221,30 @@ def selector_MagicWand():   # TO DO!!!!!!
 #         UTILITY FUNCTIONS
 # ----------------------------------
 
-def is_out_of_bounds(image, x: int, y: int) -> bool:  # used to check if brush goes out of bounds
-    height = image.shape[0]
-    width = image.shape[1]
 
-    if x < 0 or x > width or y < 0 or y > height:
+def refresh_temp():
+    global canvas_matrix, canvas_matrix_temp
+    np.copyto(canvas_matrix_temp, canvas_matrix)
+    selection_apply()
+
+
+def clean_canvas():
+    canvas_matrix.fill(255)
+    save_step()
+    refresh_temp()
+
+
+def clear_steps():
+    global step, current_step
+    step = [canvas_matrix.copy()]
+    current_step = 0
+
+
+def is_out_of_bounds(image, x: int, y: int) -> bool:  # used to check if brush goes out of bounds
+    width = image.shape[0]
+    height = image.shape[1]
+
+    if x < 0 or x > width-1 or y < 0 or y > height-1:
         return True
     else:
         if selection_exists:
@@ -284,13 +328,24 @@ def compare_colors(original_color, new_color, margin) -> bool:
         return False
 
 
-def check_neighbors(x, y):
+def check_neighbors_selection(x, y):
 
     for temp_x in range(-1, 2):
         for temp_y in range(-1, 2):
             if not selection_matrix[x+temp_x, y+temp_y]:
                 return True
     return False
+
+def check_neighbors_color(x, y, color):
+
+    neighbors = []
+    for temp_x in range(-1, 2):
+        for temp_y in range(-1, 2):
+            if not (temp_y==0 and temp_x==0):
+                if not is_out_of_bounds(canvas_matrix, x+temp_x, y+temp_y):
+                    if (canvas_matrix[x+temp_x, y+temp_y] == color).all():
+                        neighbors.append([x+temp_x, y+temp_y])
+    return neighbors
 
 
 def negative(x, y):
@@ -306,39 +361,65 @@ def selection_apply():
             if selection_matrix[x, y]:
                 if x == 0 or x == size_x-1 or y == 0 or y == size_y-1:
                     negative(x, y)
-                if check_neighbors(x, y):
+                if check_neighbors_selection(x, y):
                     negative(x, y)
 
 
+def fill(x, y, color):
+    global canvas_matrix, canvas_matrix_temp
+    queue = [[x, y]]
+    color_origin = np.empty(3)
+    np.copyto(color_origin, canvas_matrix[x][y])
+    if (color == color_origin).all():
+        return
+    canvas_matrix[queue[0][0]][queue[0][1]] = color
+    while len(queue) > 0:
+        temp = check_neighbors_color(queue[0][0], queue[0][1], color_origin)
+        for temp_x in temp:
+            queue.append(temp_x)
+            canvas_matrix[temp_x[0]][temp_x[1]] = color
+        queue.pop(0)
+
+    refresh_temp()
+    save_step()
 
 
-draw(50,50,pencil,[0,0,180])
-draw(100,100,brush,[255,0,0])
-draw(250,250,spray,[0,100,0])
-for z in range(40, 170):
-    for t in range(40, 170):
-        selection_matrix[z, t] = True
+
+def test():
+    global step
+    draw(50,50,pencil,[0,0,180])
+    save_step()
 
 
-selection_exists = True
-draw(170,170,spray,[0,100,0])
-start = time.time()
+    draw(100,100,brush,[255,0,0])
+    save_step()
 
-# while (time.time()-start)<5:
-#     cv2.imshow('o', canvas_matrix)
-#     cv2.imshow('i',canvas_matrix_temp)
-#
-#     cv2.waitKey(1)
+    draw(250,250,spray,[0,100,0])
+    b_undo()
+    b = input('sth')
+    if b == 'a':
+        b_redo()
 
-selection_matrix.fill(False)
-for z in range(0, 110):
-   for t in range(0, 110):
-       selection_matrix[z, t] = True
+    for z in range(40, 170):
+        for t in range(40, 170):
+            selection_matrix[z, t] = True
 
-draw(140, 190, brush, [255, 0, 0])
-draw(0, 0, brush, [255, 0, 0])
 
-# while 1:
-#     cv2.imshow('o', canvas_matrix)
-#     cv2.imshow('i',canvas_matrix_temp)
-#     cv2.waitKey(1)
+    selection_exists = True
+    draw(170,170,spray,[0,100,0])
+    save_step()
+    selection_matrix.fill(False)
+    selection_exists = False
+
+    draw(140, 190, brush, [255, 0, 0])
+    draw(0, 0, brush, [255, 0, 0])
+    save_step()
+
+    #fill(350, 350, [0,255,100])
+    #save_step()
+
+    print(current_step)
+    while 1:
+
+        cv2.imshow('o', step[0])
+        cv2.waitKey(10)

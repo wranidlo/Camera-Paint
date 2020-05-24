@@ -7,6 +7,7 @@ import cv2
 import brushes.Brushes as Br
 
 
+
 # Class to displaying tool tips
 class ToolTip(object):
     def __init__(self, widget):
@@ -62,7 +63,7 @@ class Application(tk.Frame):
                 self.usage.histogram_created_check = True
                 self.check_if_configured = 0
                 self.usage.cap.release()
-                self.show_image(Br.canvas_matrix)
+                self.show_image()
 
     # displaying current scan view CAMERA
     def show_config(self):
@@ -119,40 +120,40 @@ class Application(tk.Frame):
             self.TOGGLE_BUTTON.config(text="Toggle view", bg="green")
             self.check_if_already_showing = 0
             self.usage.cap.release()
-            self.show_image(Br.canvas_matrix)
+            self.show_image()
 
     # displaying current camera view CAMERA
     def show_center(self):
         if self.usage.cap.isOpened():
             img, _ = self.usage.get_center()
-            self.show_image(img)
+            self.show_image()
             self.display.after(10, self.show_center)
 
     # displaying image BRUSHES
-    def show_image(self, image):
-        self.refresh_image(image)
+    def show_image(self):
+        self.refresh_image()
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
         self.resize(self.display)
 
     # opening color_chooser window
     def color_chooser(self):
         color = colorchooser.askcolor(title="Select color")
-        print(color)
         self.COLOUR_BUTTON.configure(fg=color[1])
+        self.current_color = color
 
     def change_tool(self, tool):
         if tool == 0:
             self.TOOL_BUTTON.config(image=self.IMAGES['brush'])
             self.TOOL_BUTTON.image = self.IMAGES['brush']
-            # TODO connect with BRUSHES
+            self.current_tool = Br.brush
         elif tool == 1:
             self.TOOL_BUTTON.config(image=self.IMAGES['pencil'])
             self.TOOL_BUTTON.image = self.IMAGES['pencil']
-            # TODO connect with BRUSHES
+            self.current_tool = Br.pencil
         elif tool == 2:
             self.TOOL_BUTTON.config(image=self.IMAGES['spray'])
             self.TOOL_BUTTON.image = self.IMAGES['spray']
-            # TODO connect with BRUSHES
+            self.current_tool = Br.spray
 
     def change_selection(self, type):
         if type == 0:
@@ -165,12 +166,12 @@ class Application(tk.Frame):
             # TODO connect with BRUSHES
 
     def use_fill(self):
-        None
-        # TODO connect with BRUSHES
+        _, x_y = self.usage.get_center()
+        Br.fill(x_y[0], x_y[1], self.current_color)
 
     def use_pick_color(self):
-        None
-        # TODO connect with BRUSHES
+        _, x_y = self.usage.get_center()
+        self.current_color = Br.canvas_matrix[x_y[0]][x_y[1]]
 
     def use_zoom(self):
         None
@@ -182,8 +183,8 @@ class Application(tk.Frame):
 
     # FILE MENU METHODS
     def new_project(self):
-        None
-        # TODO connect with BRUSHES
+        Br.clean_canvas()
+        Br.clear_steps()
 
     def open_project(self):
         None
@@ -207,12 +208,10 @@ class Application(tk.Frame):
 
     # EDIT MENU METHODS
     def undo(self):
-        None
-        # TODO connect with BRUSHES
+        Br.b_undo()
 
     def redo(self):
-        None
-        # TODO connect with BRUSHES
+        Br.b_redo()
 
     def cut(self):
         None
@@ -227,8 +226,7 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def clear(self):
-        None
-        # TODO connect with BRUSHES
+        Br.clean_canvas()
 
     # VIEW MENU METHODS
     def zoom_view(self):
@@ -311,8 +309,8 @@ class Application(tk.Frame):
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
 
     # load current image state from brushes module
-    def refresh_image(self, image):
-        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(image)
+    def refresh_image(self):
+        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
 
     # displaying tool tip for widgets
@@ -551,11 +549,14 @@ class Application(tk.Frame):
         # self.style.set_theme("scidgrey")
         # initializing camera module
         self.usage = Camera.camera()
-        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix)
+        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.init_gui()
         self.check_if_already_showing = 0
         self.check_if_configured = 0
+
+        self.current_tool = None
+        self.current_color = None
 
     def init_gui(self):
         self.parent.title("Camera Paint")
