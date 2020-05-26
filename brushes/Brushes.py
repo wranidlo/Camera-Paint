@@ -23,8 +23,8 @@ class SelectionTypes(Enum):
 # ----------------------------------
 #         VARIABLES & CLASSES
 # ----------------------------------
-size_x = 640
-size_y = 480
+size_x = 480
+size_y = 640
 
 selection_type = SelectionTypes.PICK
 selection_exists = False
@@ -101,7 +101,7 @@ influence_brush = np.full((11, 11), 0.0)
 for x in range(0, len(influence_brush)):
     for y in range(0, len(influence_brush[0])):
         influence_brush[x, y] = 1 - (((pow((5-x), 2))+(pow((5-y), 2)))/50)
-b_brush = Brush(influence_brush, 10, 1, 0, 1.0)
+b_brush = Brush(influence_brush, 2, 1, 0, 1.0)
 brush = b_brush.get_transformed_brush()
 influence_spray = np.full((11,11), 0.0)
 for x in range(0, len(influence_spray)):

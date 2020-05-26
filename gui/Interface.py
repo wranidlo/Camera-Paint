@@ -479,7 +479,7 @@ class Application(tk.Frame):
         self.TOOLS_FRAME.columnconfigure(0, weight=1)
 
         # central frame for image
-        self.IMAGE_FRAME = tk.Frame(self, width=540, height=380)
+        self.IMAGE_FRAME = tk.Frame(self, width=640, height=480)
         self.IMAGE_FRAME.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
         self.IMAGE_FRAME.columnconfigure(0, weight=1)
         self.IMAGE_FRAME.rowconfigure(0, weight=1)
