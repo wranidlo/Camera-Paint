@@ -23,8 +23,8 @@ class SelectionTypes(Enum):
 # ----------------------------------
 #         VARIABLES & CLASSES
 # ----------------------------------
-size_x = 380
-size_y = 540
+size_x = 640
+size_y = 480
 
 selection_type = SelectionTypes.PICK
 selection_exists = False

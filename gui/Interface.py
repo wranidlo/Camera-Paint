@@ -51,22 +51,22 @@ class Application(tk.Frame):
 
     # open scan view to configure pointer CAMERA
     def camera_config_action(self):
-        if self.check_if_already_showing == 0:
-            if self.check_if_configured == 0:
-                self.check_if_configured = 1
+        self.check_if_already_showing =0
+        if self.check_if_configured == 0:
+            self.check_if_configured = 1
 
-                self.CONFIG_BUTTON.config(text="Stop", bg="red")
+            self.CONFIG_BUTTON.config(text="Stop", bg="red")
 
-                self.usage.set_histogram_created_check_not()
-                self.usage.cap = cv2.VideoCapture(0)
-                self.show_config()
-            else:
-                self.CONFIG_BUTTON.config(text="Scan", bg="green")
+            self.usage.set_histogram_created_check_not()
+            self.usage.cap = cv2.VideoCapture(0)
+            self.show_config()
+        else:
+            self.CONFIG_BUTTON.config(text="Scan", bg="green")
 
-                self.usage.histogram_created_check = True
-                self.check_if_configured = 0
-                self.usage.cap.release()
-                self.show_image(Br.canvas_matrix_temp)
+            self.usage.histogram_created_check = True
+            self.check_if_configured = 0
+            self.usage.cap.release()
+            self.show_image(Br.canvas_matrix_temp)
 
     # displaying current scan view CAMERA
     def show_config(self):
@@ -113,24 +113,40 @@ class Application(tk.Frame):
     def toggle_view_action(self):
         if self.check_if_already_showing == 0:
             if self.usage.histogram_created_check is True:
+                self.usage.cap.release()
                 self.check_if_already_showing = 1
-                self.usage.cap = cv2.VideoCapture(0)
+
 
                 self.TOGGLE_BUTTON.config(text="Stop view", bg="red")
-
+                self.usage.cap = cv2.VideoCapture(0)
                 self.show_center()
         else:
-            self.TOGGLE_BUTTON.config(text="Toggle view", bg="green")
-            self.check_if_already_showing = 0
-            self.usage.cap.release()
-            self.show_image(Br.canvas_matrix_temp)
+            if self.usage.histogram_created_check is True:
+                self.usage.cap.release()
+                self.TOGGLE_BUTTON.config(text="Toggle view", bg="green")
+                self.check_if_already_showing = 0
+                self.show_image(Br.canvas_matrix_temp)
+                self.usage.cap = cv2.VideoCapture(0)
+                self.draw_something()
 
     # displaying current camera view CAMERA
     def show_center(self):
-        if self.usage.cap.isOpened():
+        if self.check_if_already_showing == 1:
             img, _ = self.usage.get_center()
+            img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             self.show_image(img)
+
             self.display.after(10, self.show_center)
+
+    def draw_something(self):
+        if self.check_if_already_showing == 0:
+            img, loc = self.usage.get_center()
+            x, y = loc
+            print("Shape", img.shape)
+            print("Center - ", x, y)
+            Br.draw(y, x, self.current_tool, self.current_color)
+            self.show_image(Br.canvas_matrix_temp)
+            self.display.after(10, self.draw_something)
 
     # displaying image BRUSHES
     def show_image(self, image):
@@ -142,7 +158,7 @@ class Application(tk.Frame):
     def color_chooser(self):
         color = colorchooser.askcolor(title="Select color")
         self.COLOUR_BUTTON.configure(fg=color[1])
-        self.current_color = color
+        self.current_color = color[1]
 
     def change_tool(self, tool):
         if tool == 0:
@@ -632,8 +648,8 @@ class Application(tk.Frame):
         self.check_if_already_showing = 0
         self.check_if_configured = 0
 
-        self.current_tool = None
-        self.current_color = None
+        self.current_tool = Br.brush
+        self.current_color = [0, 0, 255]
 
     def init_gui(self):
         self.parent.title("Camera Paint")
