@@ -3,6 +3,7 @@ import imutils
 import numpy as np
 import random
 from enum import Enum
+import math
 import time
 
 # /\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\
@@ -114,6 +115,8 @@ spray = b_spray.get_transformed_brush()
 #           MAIN FUNCTIONS
 # ----------------------------------
 
+# DIRECT CANVAS MODIFIERS
+
 
 def draw(x: int, y: int, shape, color):
     global canvas_matrix, canvas_matrix_temp
@@ -126,6 +129,27 @@ def draw(x: int, y: int, shape, color):
                     c = limit_color_value(int(canvas_matrix[x+i, y+j, k]*(1-shape[i, j]))+(int(shape[i, j]*color[k])))
                     canvas_matrix[x+i, y+j, k] = c
     refresh_temp()
+
+
+def desaturate(amount:float):  # float 0.0 - 1.0 as amount
+    global canvas_matrix
+
+    for x in range(0, len(canvas_matrix)):
+        for y in range(0, len(canvas_matrix[0])):
+            if selection_exists and selection_matrix[x][y] is False:
+                continue
+            true_value = true_color_value(canvas_matrix[x][y])
+            blend_value_blue = limit_color_value(int(true_value * amount + canvas_matrix[x][y][0] * (1 - amount)))
+            blend_value_green = limit_color_value(int(true_value * amount + canvas_matrix[x][y][1] * (1 - amount)))
+            blend_value_red = limit_color_value(int(true_value * amount + canvas_matrix[x][y][2] * (1 - amount)))
+
+            canvas_matrix[x][y][0] = blend_value_blue
+            canvas_matrix[x][y][1] = blend_value_green
+            canvas_matrix[x][y][2] = blend_value_red
+
+    refresh_temp()
+
+# UNDO/REDO RELATED
 
 
 def save_step():
@@ -156,6 +180,8 @@ def b_redo():
         current_step = current_step+1
         canvas_matrix = step[current_step].copy()
         refresh_temp()
+
+# SELECTORS
 
 
 def selector_Rect(start_pos, end_pos):  # expected tuple(x, y) as position
@@ -193,6 +219,7 @@ def selector_Rect(start_pos, end_pos):  # expected tuple(x, y) as position
     selection_exists = is_selection_empty(selection_matrix)
     return
 
+
 def selector_ColorPicker(picker_pos, margin:float):   # expected tuple(x, y) as position, float 0.0 - 1.0 as margin
     global selection_exists
 
@@ -212,9 +239,27 @@ def selector_ColorPicker(picker_pos, margin:float):   # expected tuple(x, y) as 
     selection_exists = is_selection_empty(selection_matrix)
     return
 
+
 def selector_MagicWand():   # TO DO!!!!!!
     pass
 
+
+def selector_Circle(center_pos, end_pos):  # expected tuple(x, y) as position
+    global selection_exists
+
+    radius = math.sqrt((end_pos[0] - center_pos[0])**2 + (end_pos[1] - center_pos[1])**2)
+
+    selection = np.empty((size_x, size_y), dtype='bool_')
+    selection.fill(False)
+
+    for x in range(0, len(canvas_matrix)):
+        for y in (0, len(canvas_matrix[0])):
+            if (x - center_pos[0])**2 + (y - center_pos[1])**2 <= radius**2:
+                selection[x][y] = True
+
+    join_new_selection(selection)
+    selection_exists = is_selection_empty(selection_matrix)
+    return
 
 
 # ----------------------------------
