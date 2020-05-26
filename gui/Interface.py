@@ -66,7 +66,7 @@ class Application(tk.Frame):
                 self.usage.histogram_created_check = True
                 self.check_if_configured = 0
                 self.usage.cap.release()
-                self.show_image()
+                self.show_image(Br.canvas_matrix_temp)
 
     # displaying current scan view CAMERA
     def show_config(self):
@@ -123,18 +123,18 @@ class Application(tk.Frame):
             self.TOGGLE_BUTTON.config(text="Toggle view", bg="green")
             self.check_if_already_showing = 0
             self.usage.cap.release()
-            self.show_image()
+            self.show_image(Br.canvas_matrix_temp)
 
     # displaying current camera view CAMERA
     def show_center(self):
         if self.usage.cap.isOpened():
             img, _ = self.usage.get_center()
-            self.show_image()
+            self.show_image(img)
             self.display.after(10, self.show_center)
 
     # displaying image BRUSHES
-    def show_image(self):
-        self.refresh_image()
+    def show_image(self, image):
+        self.refresh_image(image)
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
         self.resize(self.display)
 
@@ -195,7 +195,7 @@ class Application(tk.Frame):
         if self.savedFlag:
             Br.canvas_matrix = np.empty((Br.size_x, Br.size_y, 3), dtype='uint8')
             Br.canvas_matrix.fill(255)
-            self.show_image()
+            self.show_image(Br.canvas_matrix_temp)
         else:
             response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
             print(response)
@@ -214,7 +214,7 @@ class Application(tk.Frame):
                 self.OBJECT_TO_DISPLAY_IMAGE = Image.open(self.path_to_save)
                 self.OBJECT_TO_DISPLAY_IMAGE.load()
                 Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
-                self.show_image()
+                self.show_image(Br.canvas_matrix_temp)
         else:
             response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
             if response:
@@ -377,8 +377,8 @@ class Application(tk.Frame):
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
 
     # load current image state from brushes module
-    def refresh_image(self):
-        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
+    def refresh_image(self, image):
+        self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(image)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
 
     # displaying tool tip for widgets
