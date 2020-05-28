@@ -51,9 +51,9 @@ class Application(tk.Frame):
 
     # open scan view to configure pointer CAMERA
     def camera_config_action(self):
-        self.check_if_already_showing =0
-        if self.check_if_configured == 0:
-            self.check_if_configured = 1
+        self.check_if_already_showing = False
+        if not self.check_if_configured:
+            self.check_if_configured = True
 
             self.CONFIG_BUTTON.config(text="Stop", bg="red")
 
@@ -64,7 +64,7 @@ class Application(tk.Frame):
             self.CONFIG_BUTTON.config(text="Scan", bg="green")
 
             self.usage.histogram_created_check = True
-            self.check_if_configured = 0
+            self.check_if_configured = False
             self.usage.cap.release()
             self.show_image(Br.canvas_matrix_temp)
 
@@ -111,10 +111,10 @@ class Application(tk.Frame):
 
     # open camera view CAMERA
     def toggle_view_action(self):
-        if self.check_if_already_showing == 0:
+        if not self.check_if_already_showing:
             if self.usage.histogram_created_check is True:
                 self.usage.cap.release()
-                self.check_if_already_showing = 1
+                self.check_if_already_showing = True
 
 
                 self.TOGGLE_BUTTON.config(text="Stop view", bg="red")
@@ -124,22 +124,26 @@ class Application(tk.Frame):
             if self.usage.histogram_created_check is True:
                 self.usage.cap.release()
                 self.TOGGLE_BUTTON.config(text="Toggle view", bg="green")
-                self.check_if_already_showing = 0
+                self.check_if_already_showing = False
                 self.show_image(Br.canvas_matrix_temp)
                 self.usage.cap = cv2.VideoCapture(0)
                 self.draw_something()
 
     # displaying current camera view CAMERA
     def show_center(self):
-        if self.check_if_already_showing == 1:
+        if self.check_if_already_showing:
             img, _ = self.usage.get_center()
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             self.show_image(img)
 
             self.display.after(10, self.show_center)
 
+    def jakis_button_action(self):
+        None
+        # TODO for Camera Dev Team
+
     def draw_something(self):
-        if self.check_if_already_showing == 0:
+        if not self.check_if_already_showing:
             img, loc = self.usage.get_center()
             x, y = loc
             print("Shape", img.shape)
@@ -321,6 +325,31 @@ class Application(tk.Frame):
         None
         # TODO connect with BRUSHES
 
+    # EVENTS METHODS
+
+    # resizing elements to current widget size after event of changed size
+    def resize_event(self, event):
+        size = (event.width, event.height)
+        self.OBJECT_TO_DISPLAY_IMAGE = self.OBJECT_TO_DISPLAY_IMAGE.resize(size, Image.ANTIALIAS)
+        self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
+        # scale_w = event.width / self.OBJECT_TO_DISPLAY.width()
+        # scale_h = event.height / self.OBJECT_TO_DISPLAY.height()
+        # self.OBJECT_TO_DISPLAY.zoom(scale_w, scale_h)
+        self.display.delete("IMG")
+        self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+
+    # painting mode activator
+    def painting_activator(self, event):
+        # TODO Camerman set this logic:
+        if self.check_if_configured:
+            print("here")
+            if not self.check_if_already_showing:
+                if self.paintingFlag:
+                    self.paintingFlag = False
+                else:
+                    self.paintingFlag = True
+                print("Current flag state: ", self.paintingFlag)
+
     # GUI SUPPORT METHODS
 
     # loading using images to list
@@ -372,17 +401,6 @@ class Application(tk.Frame):
         elif mode == 7:
             response = messagebox.askyesnocancel(title, description)
         return response
-
-    # resizing elements to current widget size after event of changed size
-    def resize_event(self, event):
-        size = (event.width, event.height)
-        self.OBJECT_TO_DISPLAY_IMAGE = self.OBJECT_TO_DISPLAY_IMAGE.resize(size, Image.ANTIALIAS)
-        self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
-        # scale_w = event.width / self.OBJECT_TO_DISPLAY.width()
-        # scale_h = event.height / self.OBJECT_TO_DISPLAY.height()
-        # self.OBJECT_TO_DISPLAY.zoom(scale_w, scale_h)
-        self.display.delete("IMG")
-        self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
 
     # resizing elements to current widget size, for not event cases (toogle view for example)
     def resize(self, canvas):
@@ -532,6 +550,13 @@ class Application(tk.Frame):
         # ToolTip for button
         self.create_tool_tip(self.TOGGLE_BUTTON, "Toggle view between image and camera")
 
+        # Creating toggle button
+        self.JAKIS_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Jakis napis", anchor=tk.CENTER, bg="green",
+                                       command=self.jakis_button_action)
+        self.JAKIS_BUTTON.grid(row=2, column=0, padx=15, pady=5, sticky=tk.N)
+        # ToolTip for button
+        self.create_tool_tip(self.JAKIS_BUTTON, "Do jakis thing")
+
         # TOOLS SUB FRAME WIDGETS
 
         # Creating tools button
@@ -628,7 +653,6 @@ class Application(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         self.parent = parent
-        self.IMAGES = {}
         self.style = ttk.Style()
         self.style.theme_use('alt')
         # self.style = ThemedStyle(self.parent)
@@ -639,17 +663,21 @@ class Application(tk.Frame):
         self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.path_to_save = ""
+        self.IMAGES = {}
+        self.current_tool = Br.brush
+        self.current_color = [0, 0, 255]
         # FLAGS
+        self.check_if_already_showing = False
+        self.check_if_configured = False
         self.fullScreenStateFlag = False
         self.savedFlag = True
+        self.paintingFlag = False
+        # GLOBAL EVENTS
+        self.parent.bind("<space>", self.painting_activator)
         # INIT WINDOW
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
         self.init_gui()
-        self.check_if_already_showing = 0
-        self.check_if_configured = 0
 
-        self.current_tool = Br.brush
-        self.current_color = [0, 0, 255]
 
     def init_gui(self):
         self.parent.title("Camera Paint")
@@ -659,7 +687,6 @@ class Application(tk.Frame):
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=0)
         self.columnconfigure(1, weight=1)
-
         self.initialize_images()
         self.create_widgets()
 
