@@ -6,6 +6,7 @@ from tkinter import filedialog as fd
 from PIL import Image, ImageTk
 import cv2
 import numpy as np
+import re
 from camera import Camera
 import brushes.Brushes as Br
 
@@ -187,6 +188,7 @@ class Application(tk.Frame):
             self.TOOL_BUTTON.config(image=self.IMAGES['spray'])
             self.TOOL_BUTTON.image = self.IMAGES['spray']
             self.current_tool = Br.spray
+        self.create_widgets_toolsconfig(1)
 
     def change_selection(self, type):
         if type == 0:
@@ -194,10 +196,14 @@ class Application(tk.Frame):
             self.SELECTION_BUTTON.image = self.IMAGES['squaredSelection']
             # TODO connect with BRUSHES
         elif type == 1:
+            self.SELECTION_BUTTON.config(image=self.IMAGES['circleSelection'])
+            self.SELECTION_BUTTON.image = self.IMAGES['circleSelection']
+            # TODO connect with BRUSHES
+        elif type == 2:
             self.SELECTION_BUTTON.config(image=self.IMAGES['colourSelection'])
             self.SELECTION_BUTTON.image = self.IMAGES['colourSelection']
             # TODO connect with BRUSHES
-        elif type == 2:
+        elif type == 3:
             self.SELECTION_BUTTON.config(image=self.IMAGES['wandSelection'])
             self.SELECTION_BUTTON.image = self.IMAGES['wandSelection']
             # TODO connect with BRUSHES
@@ -215,6 +221,10 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def use_text(self):
+        None
+        # TODO connect with BRUSHES
+
+    def use_desaturation(self):
         None
         # TODO connect with BRUSHES
 
@@ -335,6 +345,19 @@ class Application(tk.Frame):
         None
         # TODO connect with BRUSHES
 
+    # SLIDERS COMMAND
+
+    def slider_validate(self, string, slider):
+        if slider == 0:
+            result = re.match(r"([1][0-9]{0,2})|([2-9][0-9]?).[0-9]$", string)
+            print(result)
+            if result:
+                self.size_slider_val = float(self.size_slider_str)
+                self.SIZE_SLIDER.set(self.size_slider_val)
+                return result
+            else:
+                return None
+
     # EVENTS METHODS
 
     # resizing elements to current widget size after event of changed size
@@ -370,18 +393,21 @@ class Application(tk.Frame):
         spray = tk.PhotoImage(file=r"data/spray.png")
         colorPicker = tk.PhotoImage(file=r"data/icons8-colors.png")
         squared_selection = tk.PhotoImage(file=r"data/area.png")
+        circle_selection = tk.PhotoImage(file=r"data/select.png")
         colour_selection = tk.PhotoImage(file=r"data/dropper_2.png")
         wand_selection = tk.PhotoImage(file=r"data/magic.png")
         fill = tk.PhotoImage(file=r"data/icons8-fill.png")
         dropper = tk.PhotoImage(file=r"data/dropper.png")
         zoom = tk.PhotoImage(file=r"data/search.png")
         text = tk.PhotoImage(file=r"data/font.png")
+        saturation = tk.PhotoImage(file=r"data/saturation.png")
         red_colour = tk.PhotoImage(file=r"data/redColour.png")
         self.IMAGES['brush'] = brush
         self.IMAGES['pencil'] = pencil
         self.IMAGES['spray'] = spray
         self.IMAGES['colorPicker'] = colorPicker
         self.IMAGES['squaredSelection'] = squared_selection
+        self.IMAGES['circleSelection'] = circle_selection
         self.IMAGES['colourSelection'] = colour_selection
         self.IMAGES['wandSelection'] = wand_selection
         self.IMAGES['fill'] = fill
@@ -389,6 +415,7 @@ class Application(tk.Frame):
         self.IMAGES['zoom'] = zoom
         self.IMAGES['text'] = text
         self.IMAGES['redColour'] = red_colour
+        self.IMAGES['saturation'] = saturation
 
     # display message box
     def open_messagebox(self, mode, title, description):
@@ -435,6 +462,35 @@ class Application(tk.Frame):
 
         widget.bind('<Enter>', enter)
         widget.bind('<Leave>', leave)
+
+    # CREATE WIDGETS IN TOOLS CONFIG PANEL
+
+    def create_widgets_toolsconfig(self, tool):
+        if tool == 0:     # none
+            self.TEMP_LABEL_0 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
+            self.TEMP_LABEL_0.grid(row=0, column=0, padx=5, pady=5, sticky=tk.N)
+            self.TEMP_LABEL_1 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
+            self.TEMP_LABEL_1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+            self.TEMP_LABEL_2 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
+            self.TEMP_LABEL_2.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
+            self.TEMP_LABEL_3 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
+            self.TEMP_LABEL_3.grid(row=3, column=0, padx=5, pady=5, sticky=tk.N)
+            self.TEMP_LABEL_4 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
+            self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
+        elif tool == 1:   # tools
+            self.size_slider_val = 50.0
+            self.size_slider_str = "50.0"
+            self.SIZE_SLIDER_LABEL = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="Size", bg="white")
+            self.SIZE_SLIDER_LABEL.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
+            self.SIZE_ENTRY = ttk.Entry(self.SUB_TOOLS_FRAME_3, width=5, textvariable=self.size_slider_str,
+                                        validatecommand=lambda: self.slider_validate(self.size_slider_str, 0))
+            self.SIZE_ENTRY.grid(row=0, column=1, padx=5, pady=1, sticky=tk.N)
+            self.SIZE_SLIDER = tk.Scale(self.SUB_TOOLS_FRAME_3, orient=tk.HORIZONTAL, bg="white", from_=0.1, to=100.0,
+                                        resolution=0.1, length=80, sliderlength=5, showvalue=0, variable=self.size_slider_val)
+            self.SIZE_SLIDER.grid(row=1, column=0, columnspan=2, padx=5, pady=1, sticky=tk.N)
+            self.SIZE_SLIDER.set(self.size_slider_val)
+
+
 
     # CREATING ALL WIDGETS IN MAIN WINDOW
 
@@ -600,10 +656,12 @@ class Application(tk.Frame):
         self.SELECTION_BUTTON["menu"] = self.SELECTION_BUTTON.menu
         self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['squaredSelection'],
                                                command=lambda: self.change_selection(0))
-        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['colourSelection'],
+        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['circleSelection'],
                                                command=lambda: self.change_selection(1))
-        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['wandSelection'],
+        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['colourSelection'],
                                                command=lambda: self.change_selection(2))
+        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['wandSelection'],
+                                               command=lambda: self.change_selection(3))
         # ToolTip for button
         self.create_tool_tip(self.SELECTION_BUTTON, "Selection")
 
@@ -636,6 +694,13 @@ class Application(tk.Frame):
         self.TEXT_BUTTON.grid(row=3, column=0, padx=10, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.TEXT_BUTTON, "Text")
+
+        # Creating desaturation button
+        self.DESATURATION_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['saturation'], compound=tk.CENTER,
+                                     bg="white", command=lambda: self.use_desaturation())
+        self.DESATURATION_BUTTON.grid(row=3, column=1, padx=10, pady=5, sticky=tk.N)
+        # ToolTip for button
+        self.create_tool_tip(self.DESATURATION_BUTTON, "Desaturation")
 
         # TOOLS SUB FRAME WIDGETS
 
