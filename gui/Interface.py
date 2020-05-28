@@ -51,26 +51,26 @@ class Application(tk.Frame):
 
     # open scan view to configure pointer CAMERA
     def camera_config_action(self):
-        self.check_if_already_showing = False
-        if not self.check_if_configured:
-            self.check_if_configured = True
+        if not self.check_if_showing_painting and not self.check_if_showing_point:
+            if not self.check_if_scanning:
+                self.check_if_scanning = True
 
-            self.CONFIG_BUTTON.config(text="Stop", bg="red")
+                self.CONFIG_BUTTON.config(text="Stop", bg="red")
 
-            self.usage.set_histogram_created_check_not()
-            self.usage.cap = cv2.VideoCapture(0)
-            self.show_config()
-        else:
-            self.CONFIG_BUTTON.config(text="Scan", bg="green")
+                self.usage.set_histogram_created_check_not()
+                self.usage.cap = cv2.VideoCapture(0)
+                self.show_config()
+            else:
+                self.CONFIG_BUTTON.config(text="Scan", bg="green")
 
-            self.usage.histogram_created_check = True
-            self.check_if_configured = False
-            self.usage.cap.release()
-            self.show_image(Br.canvas_matrix_temp)
+                self.usage.histogram_created_check = True
+                self.check_if_scanning = False
+                self.usage.cap.release()
+                self.show_image(Br.canvas_matrix_temp)
 
     # displaying current scan view CAMERA
     def show_config(self):
-        if self.usage.cap.isOpened():
+        if self.check_if_scanning:
             frame = self.usage.search_for_object()
             quality = self.usage.check_quality(frame)
             if quality == 1:
@@ -110,45 +110,55 @@ class Application(tk.Frame):
         """
 
     # open camera view CAMERA
-    def toggle_view_action(self):
-        if not self.check_if_already_showing:
-            if self.usage.histogram_created_check is True:
-                self.usage.cap.release()
-                self.check_if_already_showing = True
+    def point_view_action(self):
+        if not self.check_if_showing_painting:
+            if not self.check_if_showing_point:
+                if self.usage.histogram_created_check is True:
+                    self.check_if_showing_point = True
 
-
-                self.TOGGLE_BUTTON.config(text="Stop view", bg="red")
-                self.usage.cap = cv2.VideoCapture(0)
-                self.show_center()
-        else:
-            if self.usage.histogram_created_check is True:
-                self.usage.cap.release()
-                self.TOGGLE_BUTTON.config(text="Toggle view", bg="green")
-                self.check_if_already_showing = False
-                self.show_image(Br.canvas_matrix_temp)
-                self.usage.cap = cv2.VideoCapture(0)
-                self.draw_something()
+                    self.POINT_BUTTON.config(text="Stop view", bg="red")
+                    self.usage.cap = cv2.VideoCapture(0)
+                    self.show_center()
+            else:
+                if self.usage.histogram_created_check is True:
+                    self.usage.cap.release()
+                    self.POINT_BUTTON.config(text="Show point", bg="green")
+                    self.check_if_showing_point = False
+                    self.show_image(Br.canvas_matrix_temp)
 
     # displaying current camera view CAMERA
     def show_center(self):
-        if self.check_if_already_showing:
+        if self.check_if_showing_point:
             img, _ = self.usage.get_center()
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             self.show_image(img)
 
             self.display.after(10, self.show_center)
 
-    def jakis_button_action(self):
-        None
-        # TODO for Camera Dev Team
+    def paint_toggle_action(self):
+        if not self.check_if_showing_point:
+            if not self.check_if_showing_painting:
+                if self.usage.histogram_created_check is True:
+                    self.check_if_showing_painting = True
+
+                    self.PAINT_BUTTON.config(text="Stop paint mode", bg="red")
+                    self.usage.cap = cv2.VideoCapture(0)
+                    self.draw_something()
+            else:
+                if self.usage.histogram_created_check is True:
+                    self.usage.cap.release()
+                    self.PAINT_BUTTON.config(text="Paint mode", bg="green")
+                    self.check_if_showing_painting = False
+                    self.show_image(Br.canvas_matrix_temp)
 
     def draw_something(self):
-        if not self.check_if_already_showing:
-            img, loc = self.usage.get_center()
-            x, y = loc
-            print("Shape", img.shape)
-            print("Center - ", x, y)
-            Br.draw(y, x, self.current_tool, self.current_color)
+        if self.check_if_showing_painting:
+            if self.painting_flag:
+                img, loc = self.usage.get_center()
+                x, y = loc
+                print("Shape", img.shape)
+                print("Center - ", x, y)
+                Br.draw(y, x, self.current_tool, self.current_color)
             self.show_image(Br.canvas_matrix_temp)
             self.display.after(10, self.draw_something)
 
@@ -340,15 +350,13 @@ class Application(tk.Frame):
 
     # painting mode activator
     def painting_activator(self, event):
-        # TODO Camerman set this logic:
-        if self.check_if_configured:
-            print("here")
-            if not self.check_if_already_showing:
-                if self.paintingFlag:
-                    self.paintingFlag = False
+        if not self.check_if_scanning and not self.check_if_showing_point:
+            if self.check_if_showing_painting:
+                if self.painting_flag:
+                    self.painting_flag = False
                 else:
-                    self.paintingFlag = True
-                print("Current flag state: ", self.paintingFlag)
+                    self.painting_flag = True
+                print("Current flag state: ", self.painting_flag)
 
     # GUI SUPPORT METHODS
 
@@ -544,18 +552,18 @@ class Application(tk.Frame):
         self.create_tool_tip(self.CONFIG_BUTTON, "Start scanning object")
 
         # Creating toggle button
-        self.TOGGLE_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Toggle view", anchor=tk.CENTER, bg="green",
-                                       command=self.toggle_view_action)
-        self.TOGGLE_BUTTON.grid(row=1, column=0, padx=15, pady=5, sticky=tk.N)
+        self.POINT_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Show point", anchor=tk.CENTER, bg="green",
+                                      command=self.point_view_action)
+        self.POINT_BUTTON.grid(row=1, column=0, padx=15, pady=5, sticky=tk.N)
         # ToolTip for button
-        self.create_tool_tip(self.TOGGLE_BUTTON, "Toggle view between image and camera")
+        self.create_tool_tip(self.POINT_BUTTON, "Toggle showing point view")
 
         # Creating toggle button
-        self.JAKIS_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Jakis napis", anchor=tk.CENTER, bg="green",
-                                       command=self.jakis_button_action)
-        self.JAKIS_BUTTON.grid(row=2, column=0, padx=15, pady=5, sticky=tk.N)
+        self.PAINT_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_1, text="Paint mode", anchor=tk.CENTER, bg="green",
+                                      command=self.paint_toggle_action)
+        self.PAINT_BUTTON.grid(row=2, column=0, padx=15, pady=5, sticky=tk.N)
         # ToolTip for button
-        self.create_tool_tip(self.JAKIS_BUTTON, "Do jakis thing")
+        self.create_tool_tip(self.PAINT_BUTTON, "Toggle point view (pressing spacebar activate drawing)")
 
         # TOOLS SUB FRAME WIDGETS
 
@@ -667,11 +675,12 @@ class Application(tk.Frame):
         self.current_tool = Br.brush
         self.current_color = [0, 0, 255]
         # FLAGS
-        self.check_if_already_showing = False
-        self.check_if_configured = False
+        self.check_if_showing_painting = False
+        self.check_if_showing_point = False
+        self.check_if_scanning = False
         self.fullScreenStateFlag = False
         self.savedFlag = True
-        self.paintingFlag = False
+        self.painting_flag = False
         # GLOBAL EVENTS
         self.parent.bind("<space>", self.painting_activator)
         # INIT WINDOW
