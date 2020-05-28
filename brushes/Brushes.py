@@ -21,9 +21,17 @@ class SelectionTypes(Enum):
     SUB = 2     # Subtract from current selection
     MUL = 3    # Leave only shared selection
 
+
+class ToolType(Enum):
+    BRUSH = 0
+    PENCIL = 1
+    SPRAY = 2
+
 # ----------------------------------
 #         VARIABLES & CLASSES
 # ----------------------------------
+
+
 size_x = 480
 size_y = 640
 
@@ -45,6 +53,8 @@ current_step = 0
 
 
 
+
+
 class Brush(object):
     # constant multiplier used to create default variant of a brush
     sizeBase = 0
@@ -54,7 +64,7 @@ class Brush(object):
     opacity = 1.0
     shape_matrix = [[]]
 
-    def __init__(self, shape_matrix, sizeBase: int = None, sizeCurrent: int = None, rotation: int = None, opacity: float= None):
+    def __init__(self, shape_matrix, sizeBase: int = None, sizeCurrent: int = None, rotation: int = None, opacity: float = None):
         if sizeBase is None:
             self.sizeBase = 1
         else:
@@ -94,22 +104,15 @@ class Brush(object):
         return rotated_brush
 
 
+system_brush = Brush([[1]], 1, 1, 0, 1.0)
+
 # pre-defined brushes
-influence_pencil = np.full((11, 11), 1.0)
-b_pencil = Brush(influence_pencil, 10, 1, 0, 1.0)
-pencil = b_pencil.get_transformed_brush()
-influence_brush = np.full((11, 11), 0.0)
-for x in range(0, len(influence_brush)):
-    for y in range(0, len(influence_brush[0])):
-        influence_brush[x, y] = 1 - (((pow((5-x), 2))+(pow((5-y), 2)))/50)
-b_brush = Brush(influence_brush, 2, 1, 0, 1.0)
-brush = b_brush.get_transformed_brush()
-influence_spray = np.full((11,11), 0.0)
-for x in range(0, len(influence_spray)):
-    for y in range(0, len(influence_spray[0])):
-        influence_spray[x, y] = (random.randint(0, 10)/10)
-b_spray = Brush(influence_spray, 10, 1, 0, 1.0)
-spray = b_spray.get_transformed_brush()
+
+predefined_brushes = [
+
+]
+
+
 
 # ----------------------------------
 #           MAIN FUNCTIONS
@@ -148,6 +151,27 @@ def desaturate(amount:float):  # float 0.0 - 1.0 as amount
             canvas_matrix[x][y][2] = blend_value_red
 
     refresh_temp()
+
+
+def fill(x, y, color):
+    global canvas_matrix, canvas_matrix_temp
+    queue = [[x, y]]
+    color_origin = np.empty(3)
+    np.copyto(color_origin, canvas_matrix[x][y])
+    if (color == color_origin).all():
+        return
+    canvas_matrix[queue[0][0]][queue[0][1]] = color
+    while len(queue) > 0:
+        temp = check_neighbors_color(queue[0][0], queue[0][1], color_origin)
+        for temp_x in temp:
+            queue.append(temp_x)
+            canvas_matrix[temp_x[0]][temp_x[1]] = color
+        queue.pop(0)
+
+    refresh_temp()
+    save_step()
+
+
 
 # UNDO/REDO RELATED
 
@@ -381,6 +405,7 @@ def check_neighbors_selection(x, y):
                 return True
     return False
 
+
 def check_neighbors_color(x, y, color):
 
     neighbors = []
@@ -409,62 +434,40 @@ def selection_apply():
                 if check_neighbors_selection(x, y):
                     negative(x, y)
 
-
-def fill(x, y, color):
-    global canvas_matrix, canvas_matrix_temp
-    queue = [[x, y]]
-    color_origin = np.empty(3)
-    np.copyto(color_origin, canvas_matrix[x][y])
-    if (color == color_origin).all():
-        return
-    canvas_matrix[queue[0][0]][queue[0][1]] = color
-    while len(queue) > 0:
-        temp = check_neighbors_color(queue[0][0], queue[0][1], color_origin)
-        for temp_x in temp:
-            queue.append(temp_x)
-            canvas_matrix[temp_x[0]][temp_x[1]] = color
-        queue.pop(0)
-
-    refresh_temp()
-    save_step()
+# SYSTEM BRUSH RELATED
 
 
+def get_final_influence(toolType: int):
+    influence_matrix = system_brush.get_transformed_brush()
 
-def test():
-    global step
-    draw(50,50,pencil,[0,0,180])
-    save_step()
+    if toolType == ToolType.BRUSH:
+        return influence_matrix
+
+    elif toolType == ToolType.PENCIL:
+        for x in range(len(influence_matrix)):
+            for y in range(len(influence_matrix[0])):
+                if influence_matrix[x][y] > 0:
+                    influence_matrix[x][y] = 1.0
+
+        return influence_matrix
+
+    elif toolType == ToolType.SPRAY:
+        for x in range(len(influence_matrix)):
+            for y in range(len(influence_matrix[0])):
+                if influence_matrix[x][y] > 0:
+                    influence_matrix[x][y] = random.uniform(0.0, 1.0)
+
+        return influence_matrix
 
 
-    draw(100,100,brush,[255,0,0])
-    save_step()
+def change_brush_shape(shape_number: int) -> True:
+    if len(predefined_brushes) < shape_number + 1:
+        return False
 
-    draw(250,250,spray,[0,100,0])
-    b_undo()
-    b = input('sth')
-    if b == 'a':
-        b_redo()
-
-    for z in range(40, 170):
-        for t in range(40, 170):
-            selection_matrix[z, t] = True
+    system_brush.shape_matrix = predefined_brushes[shape_number][0]
+    system_brush.sizeBase = predefined_brushes[shape_number][1]
+    return True
 
 
-    selection_exists = True
-    draw(170,170,spray,[0,100,0])
-    save_step()
-    selection_matrix.fill(False)
-    selection_exists = False
-
-    draw(140, 190, brush, [255, 0, 0])
-    draw(0, 0, brush, [255, 0, 0])
-    save_step()
-
-    #fill(350, 350, [0,255,100])
-    #save_step()
-
-    print(current_step)
-    while 1:
-
-        cv2.imshow('o', step[0])
-        cv2.waitKey(10)
+def get_predefined_brushes_amount() -> int:
+    return len(predefined_brushes)
