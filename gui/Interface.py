@@ -377,6 +377,7 @@ class Application(tk.Frame):
             if self.check_if_showing_painting:
                 if self.painting_flag:
                     self.painting_flag = False
+                    Br.save_step()
                 else:
                     self.painting_flag = True
                 print("Current flag state: ", self.painting_flag)

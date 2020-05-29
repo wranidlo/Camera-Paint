@@ -112,7 +112,21 @@ predefined_brushes = [
 
 ]
 
-
+influence_pencil = np.full((11, 11), 1.0)
+b_pencil = Brush(influence_pencil, 10, 1, 0, 1.0)
+pencil = b_pencil.get_transformed_brush()
+influence_brush = np.full((11, 11), 0.0)
+for x in range(0, len(influence_brush)):
+    for y in range(0, len(influence_brush[0])):
+        influence_brush[x, y] = 1 - (((pow((5-x), 2))+(pow((5-y), 2)))/50)
+b_brush = Brush(influence_brush, 2, 1, 0, 1.0)
+brush = b_brush.get_transformed_brush()
+influence_spray = np.full((11,11), 0.0)
+for x in range(0, len(influence_spray)):
+    for y in range(0, len(influence_spray[0])):
+        influence_spray[x, y] = (random.randint(0, 10)/10)
+b_spray = Brush(influence_spray, 10, 1, 0, 1.0)
+spray = b_spray.get_transformed_brush()
 
 # ----------------------------------
 #           MAIN FUNCTIONS
