@@ -167,20 +167,15 @@ def desaturate(amount:float):  # float 0.0 - 1.0 as amount
     refresh_temp()
 
 
-def fill(x, y, color):
-    global canvas_matrix, canvas_matrix_temp
-    queue = [[x, y]]
-    color_origin = np.empty(3)
-    np.copyto(color_origin, canvas_matrix[x][y])
-    if (color == color_origin).all():
-        return
-    canvas_matrix[queue[0][0]][queue[0][1]] = color
-    while len(queue) > 0:
-        temp = check_neighbors_color(queue[0][0], queue[0][1], color_origin)
-        for temp_x in temp:
-            queue.append(temp_x)
-            canvas_matrix[temp_x[0]][temp_x[1]] = color
-        queue.pop(0)
+def fill(pos_x, pos_y, color):
+    global canvas_matrix, canvas_matrix_temp, selection_matrix
+    mask = np.zeros((size_x+2, size_y+2), np.uint8)
+    if selection_exists:
+        for x in range(0, size_x):
+            for y in range(0, size_y):
+                if not selection_matrix[x][y]:
+                    mask[x+1][y+1] = 1
+    cv2.floodFill(canvas_matrix, mask, (pos_x, pos_y), color)
 
     refresh_temp()
     save_step()
@@ -485,3 +480,4 @@ def change_brush_shape(shape_number: int) -> True:
 
 def get_predefined_brushes_amount() -> int:
     return len(predefined_brushes)
+
