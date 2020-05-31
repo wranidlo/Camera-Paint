@@ -291,16 +291,14 @@ class Application(tk.Frame):
         Br.b_redo()
 
     def cut(self):
-        None
-        # TODO connect with BRUSHES
+        Br.cut()
 
     def copy(self):
-        None
-        # TODO connect with BRUSHES
+        Br.copy()
 
     def paste(self):
-        None
-        # TODO connect with BRUSHES
+        _, x_y = self.usage.get_center()
+        Br.paste(x_y[0], x_y[1])
 
     def clear(self):
         Br.clean_canvas()
@@ -322,8 +320,8 @@ class Application(tk.Frame):
 
     # IMAGE MENU METHODS
     def size_image(self):
-        None
-        # TODO connect with BRUSHES
+        # Br.resize(s_x, s_y)
+        pass
 
     def color_space(self):
         None

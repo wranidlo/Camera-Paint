@@ -51,8 +51,7 @@ selection_matrix.fill(False)
 step = [canvas_matrix.copy()]
 current_step = 0
 
-
-
+copied = None
 
 
 class Brush(object):
@@ -119,7 +118,7 @@ influence_brush = np.full((11, 11), 0.0)
 for x in range(0, len(influence_brush)):
     for y in range(0, len(influence_brush[0])):
         influence_brush[x, y] = 1 - (((pow((5-x), 2))+(pow((5-y), 2)))/50)
-b_brush = Brush(influence_brush, 2, 1, 0, 1.0)
+b_brush = Brush(influence_brush, 20, 1, 0, 1.0)
 brush = b_brush.get_transformed_brush()
 influence_spray = np.full((11,11), 0.0)
 for x in range(0, len(influence_spray)):
@@ -293,6 +292,126 @@ def selector_Circle(center_pos, end_pos):  # expected tuple(x, y) as position
     join_new_selection(selection)
     selection_exists = is_selection_empty(selection_matrix)
     return
+
+# SIZING IMAGE
+
+
+def resize(new_x, new_y):
+    global canvas_matrix, canvas_matrix_temp, selection_matrix, selection_exists, size_x, size_y
+    new_canvas = np.empty((new_x, new_y, 3), dtype='uint8')
+    new_canvas.fill(255)
+    max_x = size_x
+    max_y = size_y
+    if new_x < max_x:
+        max_x = new_x
+    if new_y < max_y:
+        max_y = new_y
+    for x in range(0, max_x):
+        for y in range(0, max_y):
+            new_canvas[x, y] = canvas_matrix[x, y].copy()
+
+    canvas_matrix = new_canvas.copy()
+    canvas_matrix_temp = np.empty((new_x, new_y, 3), dtype='uint8')
+
+    selection_matrix = np.empty((new_x, new_y), dtype='bool_')
+    selection_matrix.fill(False)
+
+    selection_exists = False
+
+    size_x = new_x
+    size_y = new_y
+
+    refresh_temp()
+
+# COPYING/PASTING
+
+
+def copy():
+    global size_x, size_y, canvas_matrix, copied
+    if selection_exists:
+        max_x = 0
+        max_y = 0
+        min_x = size_x
+        min_y = size_y
+        for x in range(0,size_x):
+            for y in range(0,size_y):
+                if selection_matrix[x][y]:
+                    if x<min_x:
+                        min_x=x
+                    if x>max_x:
+                        max_x=x
+                    if y<min_y:
+                        min_y=y
+                    if y>max_y:
+                        max_y=y
+        size_temp_x = (max_x-min_x)
+        size_temp_y = (max_y - min_y)
+        copied = np.empty((size_temp_x, size_temp_y, 3), dtype='uint8')
+        copied.fill(-1)
+
+        for x in range(0,size_temp_x):
+            for y in range(0,size_temp_y):
+                if selection_matrix[min_x+x][min_y+y]:
+                    copied[x][y] = canvas_matrix[min_x+x][min_y+y].copy()
+    else:
+        copied = canvas_matrix.copy()
+
+
+def paste(pos_x, pos_y):
+    global copied, canvas_matrix
+
+    if copied is None:
+        return
+
+    len_hor = int(len(copied)/2)+1
+    len_ver = int(len(copied[0]) / 2) + 1
+
+    for x in range(0,len(copied)):
+        for y in range(0,len(copied[0])):
+            if not is_out_of_bounds(canvas_matrix, x+pos_x-len_hor, y+pos_y-len_ver):
+                if not copied[x][y][0] == -1:
+                    canvas_matrix[x+pos_x-len_hor][y+pos_y-len_ver] = copied[x][y].copy()
+
+    refresh_temp()
+
+
+def cut():
+    global size_x, size_y, canvas_matrix, copied
+
+    white_pixel = np.empty(3, dtype='uint8')
+    white_pixel.fill(255)
+    if selection_exists:
+        max_x = 0
+        max_y = 0
+        min_x = size_x
+        min_y = size_y
+        for x in range(0, size_x):
+            for y in range(0, size_y):
+                if selection_matrix[x][y]:
+                    if x < min_x:
+                        min_x = x
+                    if x > max_x:
+                        max_x = x
+                    if y < min_y:
+                        min_y = y
+                    if y > max_y:
+                        max_y = y
+        size_temp_x = (max_x - min_x)
+        size_temp_y = (max_y - min_y)
+        copied = np.empty((size_temp_x, size_temp_y, 3), dtype='uint8')
+        copied.fill(-1)
+
+        for x in range(0, size_temp_x):
+            for y in range(0, size_temp_y):
+                if selection_matrix[min_x + x][min_y + y]:
+                    copied[x][y] = canvas_matrix[min_x + x][min_y + y].copy()
+                    canvas_matrix[min_x + x][min_y + y] = white_pixel.copy()
+
+        refresh_temp()
+    else:
+        copied = canvas_matrix.copy()
+        canvas_matrix.fill(255)
+        refresh_temp()
 
 
 # ----------------------------------
@@ -480,4 +599,3 @@ def change_brush_shape(shape_number: int) -> True:
 
 def get_predefined_brushes_amount() -> int:
     return len(predefined_brushes)
-
