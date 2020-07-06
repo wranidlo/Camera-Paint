@@ -164,6 +164,7 @@ class Application(tk.Frame):
                     self.draw_something()
             else:
                 if self.usage.histogram_created_check is True:
+                    self.painting_flag = False
                     self.usage.cap.release()
                     self.PAINT_BUTTON.config(text="Paint mode", bg="green")
                     self.check_if_showing_painting = False
@@ -171,13 +172,15 @@ class Application(tk.Frame):
 
     def draw_something(self):
         if self.check_if_showing_painting:
+            img, loc = self.usage.get_center()
+            x, y = loc
             if self.painting_flag:
-                img, loc = self.usage.get_center()
-                x, y = loc
                 print("Shape", img.shape)
                 print("Center - ", x, y)
                 Br.draw(y, x, self.current_tool, self.current_color)
-            self.show_image(Br.canvas_matrix_temp)
+            tmp = Br.canvas_matrix_temp.copy()
+            cv2.circle(tmp, loc, 5, [0, 0, 0], -1)
+            self.show_image(tmp)
             self.display.after(10, self.draw_something)
 
     # displaying image BRUSHES

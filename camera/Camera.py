@@ -105,7 +105,6 @@ class camera:
 
     def scan_object_fast(self):
 
-
         while self.cap.isOpened():
             ret, frame = self.cap.read()
 
