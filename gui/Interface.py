@@ -187,7 +187,7 @@ class Application(tk.Frame):
     def show_image(self, image):
         self.refresh_image(image)
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
-        self.resize_in_canvas(self.display)
+        # self.resize_in_canvas(self.display)
 
     # opening color_chooser window
     def color_chooser(self):
@@ -329,6 +329,7 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def full_screen(self):
+        self.parent.resizable(width=True, height=True)
         if self.fullScreenStateFlag:
             self.fullScreenStateFlag = False
             self.VIEW_MENU.entryconfigure(1, label="Fullscreen")
@@ -336,14 +337,15 @@ class Application(tk.Frame):
             self.fullScreenStateFlag = True
             self.VIEW_MENU.entryconfigure(1, label="Exit fullscreen")
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
-        # TODO connect with BRUSHES
+        self.parent.resizable(width=False, height=False)
 
     # IMAGE MENU METHODS
     def size_image(self):
         # Br.resize(s_x, s_y)
-        Br.resize(2000, 2000)
-        self.place_image_in_canvas(Br.canvas_matrix_temp)
-        pass
+        Br.resize(750, 1300)
+        self.image_resized()
+        # self.place_image_in_canvas(Br.canvas_matrix_temp)
+        # pass
 
     def color_space(self):
         None
@@ -382,13 +384,25 @@ class Application(tk.Frame):
 
     # resizing elements to current widget size after event of changed size
     def windows_resized(self, event):
-        self.window_height = event.height
-        self.window_width = event.width
-        self.REAL_IMAGE_FRAME.config(width=(self.window_width - 120), height=(self.window_height - 60))
-        self.IMAGE_FRAME.config(width=(self.window_width-100), height=(self.window_height-40))
-        self.VSCROLLBAR_FRAME.config(height=(self.window_height-40))
-        self.HSCROLLBAR_FRAME.config(width=(self.window_width-100))
-        self.place_image_in_canvas(Br.canvas_matrix_temp)
+        if self.window_width != event.width or self.window_height != event.height:
+            self.window_height = event.height
+            self.window_width = event.width
+            temp_width = self.window_width - 100
+            temp_height = self.window_height
+            temp2_width = self.window_width - 144
+            temp2_height = self.window_height - 20
+            self.IMAGE_FRAME.config(width=temp_width, height=temp_height)
+            self.display.config(width=temp2_width, height=temp2_height)
+            self.display_hbar.config(command=self.display.xview)
+            self.display_vbar.config(command=self.display.yview)
+            self.display.config(xscrollcommand=self.display_hbar.set, yscrollcommand=self.display_vbar.set,
+                                scrollregion=(0, 0, Br.size_y, Br.size_x))
+            self.IMAGE_FRAME.update()
+            print("--------------------")
+            print("window w,h", self.window_width, ", ", self.window_height)
+            print("image frame", self.IMAGE_FRAME.winfo_width(), ", ", self.IMAGE_FRAME.winfo_height())
+            print("canvas", self.display.winfo_width(), ", ", self.display.winfo_height())
+            self.place_image_in_canvas(Br.canvas_matrix_temp)
 
     def resize_in_canvas_event(self, event):
         size = (event.width, event.height)
@@ -474,6 +488,16 @@ class Application(tk.Frame):
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.display.delete("IMG")
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
+
+    def image_resized(self):
+        temp_width = self.window_width - 100
+        temp_height = self.window_height
+        temp2_width = self.window_width - 144
+        temp2_height = self.window_height - 20
+        self.display_hbar.config(command=self.display.xview)
+        self.display_vbar.config(command=self.display.yview)
+        self.display.config(xscrollcommand=self.display_hbar.set, yscrollcommand=self.display_vbar.set, scrollregion=(0, 0, Br.size_y, Br.size_x))
+        self.place_image_in_canvas(Br.canvas_matrix_temp)
 
     def place_image_in_canvas(self, image):
         self.refresh_image(image)
@@ -595,33 +619,15 @@ class Application(tk.Frame):
         self.TOOLS_FRAME = tk.Frame(self, width=100)
         self.TOOLS_FRAME.grid(row=0, column=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5, pady=5)
         self.TOOLS_FRAME.columnconfigure(0, weight=1)
-        temp_height = self.window_height - 40
+        temp_height = self.window_height
         temp_width = self.window_width - 100
         # central frame for image
         self.IMAGE_FRAME = tk.Frame(self,  width=temp_width, height=temp_height)
         self.IMAGE_FRAME.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
-        self.IMAGE_FRAME.columnconfigure(0, weight=1)
-        self.IMAGE_FRAME.rowconfigure(0, weight=1)
+        # self.IMAGE_FRAME.columnconfigure(0, weight=1)
+        # self.IMAGE_FRAME.rowconfigure(0, weight=1)
         # self.IMAGE_FRAME.columnconfigure(1, weight=1)
         # self.IMAGE_FRAME.rowconfigure(1, weight=1)
-        # frame for real image
-        temp_height = self.window_height-60
-        temp_width = self.window_width-120
-        self.REAL_IMAGE_FRAME = tk.Frame(self.IMAGE_FRAME, width=temp_width, height=temp_height)
-        self.REAL_IMAGE_FRAME.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
-        self.REAL_IMAGE_FRAME.columnconfigure(0, weight=1)
-        self.REAL_IMAGE_FRAME.rowconfigure(0, weight=1)
-        # frame for vertical scrollbar
-        temp_height = self.window_height - 40
-        self.VSCROLLBAR_FRAME = tk.Frame(self.IMAGE_FRAME, width=20, height=temp_height)
-        self.VSCROLLBAR_FRAME.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
-        self.VSCROLLBAR_FRAME.rowconfigure(0, weight=1)
-        # frame for horizontal scrollbar
-        temp_width = self.window_width-100
-        self.HSCROLLBAR_FRAME = tk.Frame(self.IMAGE_FRAME, height=20, width=temp_width)
-        self.HSCROLLBAR_FRAME.grid(row=1, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
-        self.HSCROLLBAR_FRAME.columnconfigure(0, weight=1)
-
 
         # SUB_FRAMES
 
@@ -775,17 +781,20 @@ class Application(tk.Frame):
         # IMAGE FRAME WIDGETS
 
         # Creating display space for image/camera view
-        self.display = tk.Canvas(self.REAL_IMAGE_FRAME, bd=0, highlightthickness=0, bg="gray")
+        temp2_height = self.window_height - 20
+        temp2_width = self.window_width - 144
+        self.display = tk.Canvas(self.IMAGE_FRAME, bd=0, highlightthickness=0, bg="gray", width=temp2_width, height=temp2_height, scrollregion=(0, 0, Br.size_y, Br.size_x))
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
         self.display.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
         # self.IMAGE_FRAME.bind("<Configure>", self.resize_in_canvas_event)
-        self.display_hbar = tk.Scrollbar(self.HSCROLLBAR_FRAME, orient=tk.HORIZONTAL)
-        self.display_hbar.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
+        self.display_hbar = tk.Scrollbar(self.IMAGE_FRAME, orient=tk.HORIZONTAL)
+        self.display_hbar.grid(row=1, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
         self.display_hbar.config(command=self.display.xview)
-        self.display_vbar = tk.Scrollbar(self.VSCROLLBAR_FRAME, orient=tk.VERTICAL)
-        self.display_vbar.grid(row=0, column=0, sticky=tk.W + tk.E + tk.N + tk.S)
+        self.display_vbar = tk.Scrollbar(self.IMAGE_FRAME, orient=tk.VERTICAL)
+        self.display_vbar.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
         self.display_vbar.config(command=self.display.yview)
         self.display.config(xscrollcommand=self.display_hbar.set, yscrollcommand=self.display_vbar.set)
+
 
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -813,8 +822,9 @@ class Application(tk.Frame):
         self.savedFlag = True
         self.painting_flag = False
         # GLOBAL EVENTS
-        self.parent.bind("<space>", self.painting_activator)
+        # self.parent.bind("<space>", self.painting_activator)
         # self.parent.bind("<Configure>", self.windows_resized)
+        # root.bind("<Configure>", self.windows_resized)
         # INIT WINDOW
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
         self.init_gui()
@@ -823,11 +833,11 @@ class Application(tk.Frame):
     def init_gui(self):
         self.parent.title("Camera Paint")
         self.parent.geometry('1280x720')
-        self.parent.resizable(width=tk.TRUE, height=tk.TRUE)
+        self.parent.resizable(width=False, height=False)
         self.grid(sticky=tk.W + tk.E + tk.N + tk.S, padx=20, pady=20)
-        self.rowconfigure(0, weight=1)
-        self.columnconfigure(0, weight=0)
-        self.columnconfigure(1, weight=1)
+        # self.rowconfigure(0, weight=1)
+        # self.columnconfigure(0, weight=0)
+        # self.columnconfigure(1, weight=1)
         self.initialize_images()
         self.create_widgets()
 
