@@ -177,6 +177,7 @@ class Application(tk.Frame):
             if self.painting_flag:
                 print("Shape", img.shape)
                 print("Center - ", x, y)
+                print(self.current_color)
                 Br.draw(y, x, self.current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()
             cv2.circle(tmp, loc, 5, [0, 0, 0], -1)
@@ -193,7 +194,8 @@ class Application(tk.Frame):
     def color_chooser(self):
         color = colorchooser.askcolor(title="Select color")
         self.COLOUR_BUTTON.configure(fg=color[1])
-        self.current_color = color[1]
+        h = str(color[1]).lstrip('#')
+        self.current_color = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
     def change_tool(self, tool):
         if tool == 0:
@@ -822,7 +824,7 @@ class Application(tk.Frame):
         self.savedFlag = True
         self.painting_flag = False
         # GLOBAL EVENTS
-        # self.parent.bind("<space>", self.painting_activator)
+        self.parent.bind("<space>", self.painting_activator)
         # self.parent.bind("<Configure>", self.windows_resized)
         # root.bind("<Configure>", self.windows_resized)
         # INIT WINDOW
