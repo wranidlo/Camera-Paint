@@ -58,6 +58,48 @@ class ToolTip(object):
         if tw:
             tw.destroy()
 
+class ImageSizeWindow(object):
+    def __init__(self, root):
+        self.image_height = tk.IntVar()
+        self.image_width = tk.IntVar()
+        self.vcmd = (root.register(self.callback))
+        self.imageSizeWindow = tk.Toplevel(root)
+        self.imageSizeWindow.title("Image size")
+        self.imageSizeWindow.resizable(False, False)
+
+        self.labelWidth = tk.Label(self.imageSizeWindow, text="Width")
+        self.labelWidth.grid(row=0, column=0)
+        self.sliderWidth = tk.Scale(self.imageSizeWindow, orient=tk.HORIZONTAL, from_=50, to=2000, resolution=1,
+                                    length=300, sliderlength=5, variable=self.image_width)
+        self.sliderWidth.grid(row=0, column=1)
+        self.entryWidth = ttk.Entry(self.imageSizeWindow, width=4, validate='all', textvariable=self.image_width,
+                                    validatecommand=(self.vcmd, '%P'))
+        self.entryWidth.grid(row=0, column=2)
+        self.image_width.set(Br.size_y)
+
+        self.labelHeight = tk.Label(self.imageSizeWindow, text="Height")
+        self.labelHeight.grid(row=1, column=0)
+        self.sliderHeight = tk.Scale(self.imageSizeWindow, orient=tk.HORIZONTAL, from_=50, to=2000, resolution=1,
+                                     length=300, sliderlength=5, variable=self.image_height)
+        self.sliderHeight.grid(row=1, column=1)
+        self.entryHeight = ttk.Entry(self.imageSizeWindow, width=4, validate='all', textvariable=self.image_height,
+                                     validatecommand=(self.vcmd, '%P'))
+        self.entryHeight.grid(row=1, column=2)
+        self.image_height.set(Br.size_x)
+
+        self.buttonOk = tk.Button(self.imageSizeWindow, text="Ok", command=self.choiceOk)
+        self.buttonOk.grid(row=2, column=1)
+
+    def callback(self, P):
+        if str.isdigit(P) or P == "":
+            return True
+        else:
+            return False
+
+    def choiceOk(self):
+        self.image_width = self.sliderWidth.get()
+        self.image_height = self.sliderHeight.get()
+        self.imageSizeWindow.destroy()
 
 # MAIN APP CLASS
 
@@ -331,7 +373,6 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def full_screen(self):
-        self.parent.resizable(width=True, height=True)
         if self.fullScreenStateFlag:
             self.fullScreenStateFlag = False
             self.VIEW_MENU.entryconfigure(1, label="Fullscreen")
@@ -339,15 +380,13 @@ class Application(tk.Frame):
             self.fullScreenStateFlag = True
             self.VIEW_MENU.entryconfigure(1, label="Exit fullscreen")
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
-        self.parent.resizable(width=False, height=False)
 
     # IMAGE MENU METHODS
     def size_image(self):
-        # Br.resize(s_x, s_y)
-        Br.resize(750, 1300)
+        window = ImageSizeWindow(root)
+        root.wait_window(window.imageSizeWindow)
+        Br.resize(window.image_height, window.image_width)
         self.image_resized()
-        # self.place_image_in_canvas(Br.canvas_matrix_temp)
-        # pass
 
     def color_space(self):
         None
@@ -386,9 +425,11 @@ class Application(tk.Frame):
 
     # resizing elements to current widget size after event of changed size
     def windows_resized(self, event):
-        if self.window_width != event.width or self.window_height != event.height:
-            self.window_height = event.height
-            self.window_width = event.width
+        # print("width: ", root.winfo_width())
+        # print("height: ", root.winfo_height())
+        if self.window_width != root.winfo_width() or self.window_height != root.winfo_height():
+            self.window_height = root.winfo_height()
+            self.window_width = root.winfo_width()
             temp_width = self.window_width - 100
             temp_height = self.window_height
             temp2_width = self.window_width - 144
@@ -492,10 +533,6 @@ class Application(tk.Frame):
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
 
     def image_resized(self):
-        temp_width = self.window_width - 100
-        temp_height = self.window_height
-        temp2_width = self.window_width - 144
-        temp2_height = self.window_height - 20
         self.display_hbar.config(command=self.display.xview)
         self.display_vbar.config(command=self.display.yview)
         self.display.config(xscrollcommand=self.display_hbar.set, yscrollcommand=self.display_vbar.set, scrollregion=(0, 0, Br.size_y, Br.size_x))
@@ -826,7 +863,7 @@ class Application(tk.Frame):
         # GLOBAL EVENTS
         self.parent.bind("<space>", self.painting_activator)
         # self.parent.bind("<Configure>", self.windows_resized)
-        # root.bind("<Configure>", self.windows_resized)
+        root.bind("<Configure>", self.windows_resized)
         # INIT WINDOW
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
         self.init_gui()
@@ -835,7 +872,7 @@ class Application(tk.Frame):
     def init_gui(self):
         self.parent.title("Camera Paint")
         self.parent.geometry('1280x720')
-        self.parent.resizable(width=False, height=False)
+        self.parent.resizable(width=True, height=True)
         self.grid(sticky=tk.W + tk.E + tk.N + tk.S, padx=20, pady=20)
         # self.rowconfigure(0, weight=1)
         # self.columnconfigure(0, weight=0)
