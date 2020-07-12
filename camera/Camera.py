@@ -40,6 +40,10 @@ class camera:
 
         self.histogram = None
         self.cap = cv2.VideoCapture(0)
+
+        _, frame = self.cap.read()
+        self.rows, self.cols, _ = frame.shape
+        print(self.rows, self.cols)
         self.last_max_contour = None
 
     def draw_place(self, frame):
