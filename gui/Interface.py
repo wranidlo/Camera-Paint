@@ -217,9 +217,10 @@ class Application(tk.Frame):
             img, loc = self.usage.get_center()
             x, y = loc
             if self.painting_flag:
-                print("Shape", img.shape)
-                print("Center - ", x, y)
-                print(self.current_color)
+                print("Center fom camera - ", x, y)
+                x = int(Br.size_x / self.usage.rows)*x
+                y = int(Br.size_y / self.usage.cols)*y
+                print("Center fom image- ", x, y)
                 Br.draw(y, x, self.current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()
             cv2.circle(tmp, loc, 5, [0, 0, 0], -1)
@@ -845,6 +846,8 @@ class Application(tk.Frame):
         # initializing camera module
         # VARIABLES
         self.usage = Camera.camera()
+        Br.size_x = self.usage.rows
+        Br.size_y = self.usage.cols
         self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.path_to_save = ""
