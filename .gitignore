@@ -4,3 +4,4 @@
 .idea/misc.xml
 .idea/Camera-Paint.iml
 *.pyc 
+venv/
