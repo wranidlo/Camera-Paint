@@ -9,6 +9,79 @@ import numpy as np
 import re
 from camera import Camera
 import brushes.Brushes as Br
+import configparser
+
+
+class ConfigManager(object):
+    def __init__(self, file_name="config.ini"):
+        self.config = configparser.ConfigParser()
+        self.file_name = file_name
+
+    def display_config(self):
+        print("Config:")
+        for section in self.config.sections():
+            print("Section: %s" % section)
+            for options in self.config.options(section):
+                print("%s\t%s\t%s"% (options, self.config.get(section, options), str(type(options))))
+
+    def write(self):
+        with open(self.file_name, 'w') as configfile:
+            self.config.write(configfile)
+
+    def read(self):
+        self.config = configparser.ConfigParser()
+        self.config.read('config.ini')
+
+    def write_default(self):
+        self.config['RECENT_IMAGES'] = {"first": "none", "second": "none", "third": "none", "fourth": "none", "fifth": "none"}
+        with open(self.file_name, 'w') as configfile:
+            self.config.write(configfile)
+
+    def add_recent(self, new_path):
+        # how many shifts will be done
+        step = 4
+        # if new is current first then there are no changes
+        if new_path != self.config['RECENT_IMAGES']['first']:
+            # if new is current second there will be only one shift
+            if new_path == self.config['RECENT_IMAGES']['second']:
+                step = 1
+            # if new is current third there will be two shifts
+            elif new_path == self.config['RECENT_IMAGES']['third']:
+                step = 2
+            # if new is current fourth there will be three shifts
+            elif new_path == self.config['RECENT_IMAGES']['fourth']:
+                step = 3
+            # if new is current fifth there will be four shifts
+            elif new_path == self.config['RECENT_IMAGES']['fifth']:
+                step = 4
+            # chang first element and remember second for first shift
+            temp_path = self.config['RECENT_IMAGES']['first']
+            self.config['RECENT_IMAGES']['first'] = new_path
+            # number of shifts is decreased after remember element to shift
+            step -= 1
+            # if there are more shifts
+            if step != 0:
+                temp_path2 = self.config['RECENT_IMAGES']['second']
+                self.config['RECENT_IMAGES']['second'] = temp_path
+                # number of shifts is decreased after remember element to shift
+                step -= 1
+                if step != 0:
+                    temp_path = self.config['RECENT_IMAGES']['third']
+                    self.config['RECENT_IMAGES']['third'] = temp_path2
+                    # number of shifts is decreased after remember element to shift
+                    step -= 1
+                    if step != 0:
+                        temp_path2 = self.config['RECENT_IMAGES']['fourth']
+                        self.config['RECENT_IMAGES']['fourth'] = temp_path
+                        self.config['RECENT_IMAGES']['fifth'] = temp_path2
+                    else:
+                        self.config['RECENT_IMAGES']['fourth'] = temp_path
+                else:
+                    self.config['RECENT_IMAGES']['third'] = temp_path2
+            # if there are no more shifts - end
+            else:
+                self.config['RECENT_IMAGES']['second'] = temp_path
+        self.write()
 
 
 # Class to auto hide/show scrollbar
@@ -315,7 +388,9 @@ class Application(tk.Frame):
                                                                 ("BMP", "*.bmp")],
                                             defaultextension="*.png")  # wywołanie okna dialogowego save file
             if self.path_to_save != "":
-                loaded_image = cv2.imread(self.path_to_save)
+                # loaded_image = cv2.imread(self.path_to_save)
+                self.config.add_recent(self.path_to_save)
+                self.reload_recent_menu()
                 self.OBJECT_TO_DISPLAY_IMAGE = Image.open(self.path_to_save)
                 self.OBJECT_TO_DISPLAY_IMAGE.load()
                 Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
@@ -326,11 +401,22 @@ class Application(tk.Frame):
                 self.savedFlag = True
                 self.open_project()
 
+    def quick_open_project(self, path):
+        self.OBJECT_TO_DISPLAY_IMAGE = Image.open(path)
+        self.OBJECT_TO_DISPLAY_IMAGE.load()
+        Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
+        self.path_to_save = path
+        self.config.add_recent(self.path_to_save)
+        self.reload_recent_menu()
+        self.show_image(Br.canvas_matrix_temp)
+
     def save_image(self):
         if self.path_to_save == "":
             self.save_image_as()
         else:
             self.OBJECT_TO_DISPLAY_IMAGE.save(self.path_to_save)
+            self.config.add_recent(self.path_to_save)
+            self.reload_recent_menu()
 
     def save_image_as(self):
         self.path_to_save = fd.asksaveasfilename(filetypes=[("PNG", "*.png"), ("JPEG", "*.jpg *.jpeg *.jpe *.jfif"),
@@ -339,10 +425,25 @@ class Application(tk.Frame):
 
         if self.path_to_save != "":
             self.OBJECT_TO_DISPLAY_IMAGE.save(self.path_to_save)
+            self.config.add_recent(self.path_to_save)
+            self.reload_recent_menu()
 
     def recent(self):
-        None
-        # TODO connect with BRUSHES
+        self.config.read()
+        self.config.display_config()
+        # path = self.config.config['RECENT_IMAGES']['first']
+        # path = self.config.config['RECENT_IMAGES']['second']
+        # if path != 'none':
+        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
+        # path = self.config.config['RECENT_IMAGES']['third']
+        # if path != 'none':
+        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
+        # path = self.config.config['RECENT_IMAGES']['fourth']
+        # if path != 'none':
+        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
+        # path = self.config.config['RECENT_IMAGES']['fifth']
+        # if path != 'none':
+        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
 
     # EDIT MENU METHODS
     def undo(self):
@@ -365,10 +466,6 @@ class Application(tk.Frame):
         Br.clean_canvas()
 
     # VIEW MENU METHODS
-    def zoom_view(self):
-        None
-        # TODO connect with BRUSHES
-
     def full_screen(self):
         if self.fullScreenStateFlag:
             self.fullScreenStateFlag = False
@@ -385,10 +482,6 @@ class Application(tk.Frame):
         Br.resize(window.image_height, window.image_width)
         self.image_resized()
 
-    def color_space(self):
-        None
-        # TODO connect with BRUSHES
-
     # TOOLS MENU METHODS
     # TODO connect somehow with tools bar
 
@@ -398,10 +491,6 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def shortcuts(self):
-        None
-        # TODO connect with BRUSHES
-
-    def color_space(self):
         None
         # TODO connect with BRUSHES
 
@@ -500,6 +589,18 @@ class Application(tk.Frame):
         self.IMAGES['text'] = text
         self.IMAGES['redColour'] = red_colour
         self.IMAGES['saturation'] = saturation
+
+    def reload_recent_menu(self):
+        self.RECENT_MENU.delete(0, self.RECENT_MENU.index("end"))
+        paths = [self.config.config.get('RECENT_IMAGES', 'first'), self.config.config['RECENT_IMAGES']['second'],
+                 self.config.config['RECENT_IMAGES']['third'], self.config.config['RECENT_IMAGES']['fourth'],
+                 self.config.config['RECENT_IMAGES']['fifth']]
+        for i in range(0, 5):
+            print("Path: ", paths[i])
+            if paths[i] != "none":
+                self.RECENT_MENU.add_command(label=paths[i], command=lambda: self.quick_open_project(paths[i]))
+            else:
+                self.RECENT_MENU.add_command(label="", command=None)
 
     # display message box
     def open_messagebox(self, mode, title, description):
@@ -605,7 +706,9 @@ class Application(tk.Frame):
         self.FILE_MENU.add_command(label='Open project', command=lambda: self.open_project())
         self.FILE_MENU.add_command(label='Save', command=lambda: self.save_image())
         self.FILE_MENU.add_command(label='Save as', command=lambda: self.save_image_as())
-        self.FILE_MENU.add_command(label='Recent', command=lambda: self.recent())
+        self.RECENT_MENU = tk.Menu(self.FILE_MENU)
+        self.reload_recent_menu()
+        self.FILE_MENU.add_cascade(label='Recent', menu=self.RECENT_MENU)
         self.FILE_MENU.add_separator()
         self.FILE_MENU.add_command(label='Exit', command=self.quit)
 
@@ -622,14 +725,12 @@ class Application(tk.Frame):
         # view menu
         self.VIEW_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='View', menu=self.VIEW_MENU)
-        self.VIEW_MENU.add_command(label='Zoom in/out', command=lambda: self.zoom_view())
         self.VIEW_MENU.add_command(label='Fullscreen', command=lambda: self.full_screen())
 
         # image menu
         self.IMAGE_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='Image', menu=self.IMAGE_MENU)
         self.IMAGE_MENU.add_command(label='Size', command=lambda: self.size_image())
-        self.IMAGE_MENU.add_command(label='Colors space', command=lambda: self.color_space())
 
         # tools menu
         self.TOOLS_MENU = tk.Menu(self.MENU, tearoff=0)
@@ -846,6 +947,9 @@ class Application(tk.Frame):
         self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.path_to_save = ""
+        self.config = ConfigManager("config.ini")
+        # self.config.write_default()
+        self.config.read()
         self.IMAGES = {}
         self.current_tool = Br.brush
         self.current_color = [0, 0, 255]
