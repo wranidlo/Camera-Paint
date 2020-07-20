@@ -69,7 +69,7 @@ class ImageSizeWindow(object):
 
         self.labelWidth = tk.Label(self.imageSizeWindow, text="Width")
         self.labelWidth.grid(row=0, column=0)
-        self.sliderWidth = tk.Scale(self.imageSizeWindow, orient=tk.HORIZONTAL, from_=50, to=2000, resolution=1,
+        self.sliderWidth = tk.Scale(self.imageSizeWindow, orient=tk.HORIZONTAL, from_=1, to=2000, resolution=1,
                                     length=300, sliderlength=5, variable=self.image_width)
         self.sliderWidth.grid(row=0, column=1)
         self.entryWidth = ttk.Entry(self.imageSizeWindow, width=4, validate='all', textvariable=self.image_width,
@@ -79,7 +79,7 @@ class ImageSizeWindow(object):
 
         self.labelHeight = tk.Label(self.imageSizeWindow, text="Height")
         self.labelHeight.grid(row=1, column=0)
-        self.sliderHeight = tk.Scale(self.imageSizeWindow, orient=tk.HORIZONTAL, from_=50, to=2000, resolution=1,
+        self.sliderHeight = tk.Scale(self.imageSizeWindow, orient=tk.HORIZONTAL, from_=1, to=2000, resolution=1,
                                      length=300, sliderlength=5, variable=self.image_height)
         self.sliderHeight.grid(row=1, column=1)
         self.entryHeight = ttk.Entry(self.imageSizeWindow, width=4, validate='all', textvariable=self.image_height,
@@ -340,10 +340,6 @@ class Application(tk.Frame):
             self.OBJECT_TO_DISPLAY_IMAGE.save(self.path_to_save)
 
     def recent(self):
-        None
-        # TODO connect with BRUSHES
-
-    def print_image(self):
         None
         # TODO connect with BRUSHES
 
@@ -609,7 +605,6 @@ class Application(tk.Frame):
         self.FILE_MENU.add_command(label='Save', command=lambda: self.save_image())
         self.FILE_MENU.add_command(label='Save as', command=lambda: self.save_image_as())
         self.FILE_MENU.add_command(label='Recent', command=lambda: self.recent())
-        self.FILE_MENU.add_command(label='Print', command=lambda: self.print_image())
         self.FILE_MENU.add_separator()
         self.FILE_MENU.add_command(label='Exit', command=self.quit)
 
