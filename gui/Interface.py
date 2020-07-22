@@ -38,6 +38,7 @@ class ConfigManager(object):
             self.config.write(configfile)
 
     def add_recent(self, new_path):
+        print("Add recent - new_path arg: ", new_path)
         # how many shifts will be done
         step = 4
         # if new is current first then there are no changes
@@ -393,7 +394,8 @@ class Application(tk.Frame):
                 self.reload_recent_menu()
                 self.OBJECT_TO_DISPLAY_IMAGE = Image.open(self.path_to_save)
                 self.OBJECT_TO_DISPLAY_IMAGE.load()
-                Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
+                # Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
+                Br.load(np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
                 self.show_image(Br.canvas_matrix_temp)
         else:
             response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
@@ -404,7 +406,8 @@ class Application(tk.Frame):
     def quick_open_project(self, path):
         self.OBJECT_TO_DISPLAY_IMAGE = Image.open(path)
         self.OBJECT_TO_DISPLAY_IMAGE.load()
-        Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
+        # Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
+        Br.load(np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
         self.path_to_save = path
         self.config.add_recent(self.path_to_save)
         self.reload_recent_menu()
@@ -592,15 +595,30 @@ class Application(tk.Frame):
 
     def reload_recent_menu(self):
         self.RECENT_MENU.delete(0, self.RECENT_MENU.index("end"))
-        paths = [self.config.config.get('RECENT_IMAGES', 'first'), self.config.config['RECENT_IMAGES']['second'],
-                 self.config.config['RECENT_IMAGES']['third'], self.config.config['RECENT_IMAGES']['fourth'],
-                 self.config.config['RECENT_IMAGES']['fifth']]
-        for i in range(0, 5):
-            print("Path: ", paths[i])
-            if paths[i] != "none":
-                self.RECENT_MENU.add_command(label=paths[i], command=lambda: self.quick_open_project(paths[i]))
-            else:
-                self.RECENT_MENU.add_command(label="", command=None)
+        path_1 = self.config.config.get('RECENT_IMAGES', 'first')
+        path_2 = self.config.config.get('RECENT_IMAGES', 'second')
+        path_3 = self.config.config.get('RECENT_IMAGES', 'third')
+        path_4 = self.config.config.get('RECENT_IMAGES', 'fourth')
+        path_5 = self.config.config.get('RECENT_IMAGES', 'fifth')
+        if path_1 != "none":
+            self.RECENT_MENU.add_command(label=path_1, command=lambda: self.quick_open_project(path_1))
+        if path_2 != "none":
+            self.RECENT_MENU.add_command(label=path_2, command=lambda: self.quick_open_project(path_2))
+        if path_3 != "none":
+            self.RECENT_MENU.add_command(label=path_3, command=lambda: self.quick_open_project(path_3))
+        if path_4 != "none":
+            self.RECENT_MENU.add_command(label=path_4, command=lambda: self.quick_open_project(path_4))
+        if path_5 != "none":
+            self.RECENT_MENU.add_command(label=path_5, command=lambda: self.quick_open_project(path_5))
+        # paths = [self.config.config.get('RECENT_IMAGES', 'first'), self.config.config['RECENT_IMAGES']['second'],
+        #          self.config.config['RECENT_IMAGES']['third'], self.config.config['RECENT_IMAGES']['fourth'],
+        #          self.config.config['RECENT_IMAGES']['fifth']]
+        # for i in range(0, 5):
+        #     print("Path: ", paths[i])
+        #     if paths[i] != "none":
+        #         self.RECENT_MENU.add_command(label=paths[i], command=lambda: self.quick_open_project(paths[i]))
+        #     else:
+        #         self.RECENT_MENU.add_command(label="", command=None)
 
     # display message box
     def open_messagebox(self, mode, title, description):
