@@ -294,14 +294,14 @@ class Application(tk.Frame):
         if self.check_if_showing_painting:
             img, loc = self.usage.get_center()
             x, y = loc
+            print("Center fom camera - ", x, y)
+            x = int(Br.size_x / self.usage.rows) * x
+            y = int(Br.size_y / self.usage.cols) * y
+            print("Center fom image- ", x, y)
             if self.painting_flag:
-                print("Center fom camera - ", x, y)
-                x = int(Br.size_x / self.usage.rows)*x
-                y = int(Br.size_y / self.usage.cols)*y
-                print("Center fom image- ", x, y)
                 Br.draw(y, x, current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()
-            cv2.circle(tmp, loc, 5, [0, 0, 0], -1)
+            cv2.circle(tmp, (x, y), 5, [0, 0, 0], -1)
             self.show_image(tmp)
             self.display.after(10, self.draw_something)
 
