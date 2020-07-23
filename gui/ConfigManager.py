@@ -26,7 +26,6 @@ class ConfigManager(object):
             self.config.write(configfile)
 
     def add_recent(self, new_path):
-        print("Add recent - new_path arg: ", new_path)
         # how many shifts will be done
         step = 4
         # if new is current first then there are no changes
