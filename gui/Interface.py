@@ -84,6 +84,12 @@ class ConfigManager(object):
                 self.config['RECENT_IMAGES']['second'] = temp_path
         self.write()
 
+<<<<<<< Updated upstream
+=======
+current_tool = Br.brush
+current_tool_size = 5
+current_tool_type = 0
+>>>>>>> Stashed changes
 
 # Class to auto hide/show scrollbar
 class AutoScrollbar(tk.Scrollbar):
@@ -132,6 +138,98 @@ class ToolTip(object):
         if tw:
             tw.destroy()
 
+<<<<<<< Updated upstream
+=======
+# class to display current tool config panel
+class ToolsConfigPanel(object):
+    def __init__(self, root, frame, panelNumber=0):
+        global current_tool
+        global current_tool_size
+        self.frame = frame
+        self.panelNumber = panelNumber
+        self.tool_size = tk.IntVar()
+        self.minToolSize = 1
+        self.maxToolSize = 50
+        self.vcmd = (root.register(self.digitOnlyTextEntryCallback))
+        self.changePanel(self.panelNumber)
+
+    # callback method for digit only text entry widget
+    def digitOnlyTextEntryCallback(self, P):
+        if str.isdigit(P) or P == "":
+            return True
+        else:
+            return False
+
+    # provides the correct value of the variable
+    def changeToolSize(self, newSize):
+        global current_tool
+        global current_tool_size
+        global current_tool_type
+        if newSize >= self.minToolSize and newSize <= self.maxToolSize:
+            self.tool_size.set(newSize)
+            current_tool_size = newSize
+        elif newSize < self.minToolSize:
+            self.tool_size.set(self.minToolSize)
+            current_tool_size = self.minToolSize
+        elif newSize > self.maxToolSize:
+            self.tool_size.set(self.maxToolSize)
+            current_tool_size = self.maxToolSize
+        if current_tool_type == 0:
+            Br.b_brush = Br.brush(Br.influence_brush, 1, current_tool_size, 0, 1.0)
+            Br.brush = Br.b_brush.get_transformed_brush()
+            current_tool = Br.brush
+        elif current_tool_type == 1:
+            Br.b_pencil = Br.brush(Br.influence_pencil, 1, current_tool_size, 0, 1.0)
+            Br.pencil = Br.b_pencil.get_transformed_brush()
+            current_tool = Br.pencil
+        elif current_tool_type == 2:
+            Br.b_spray = Br.brush(Br.influence_spray, 1, current_tool_size, 0, 1.0)
+            Br.spray = Br.b_spray.get_transformed_brush()
+            current_tool = Br.spray
+
+
+    # change current panel
+    def changePanel(self, panelNumber):
+        if panelNumber == 0:
+            self.panelNumber = 0
+            self.emptyPanel()
+        elif panelNumber == 1:
+            self.panelNumber = 1
+            self.toolsPanel()
+
+    # default empty panel if no tools choosen
+    def emptyPanel(self):
+        self.TEMP_LABEL_0 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_0.grid(row=0, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_1 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_2 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_2.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_3 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_3.grid(row=3, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
+
+     # panel for painting tools: spray, pencil, brush
+    def toolsPanel(self):
+        global current_tool
+        self.size_label = tk.Label(self.frame, bd=0, text="Size", bg="white")
+        self.size_label.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
+        self.size_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.tool_size,
+                                    validatecommand=(self.vcmd, '%P'))
+        self.size_entry.grid(row=0, column=1)
+        self.size_entry.bind('<Return>', lambda: self.changeToolSize(self.tool_size.get()))
+        print("Current size: ", current_tool_size)
+        self.tool_size.set(current_tool_size)
+        self.size_decrease_button = tk.Button(text='-', underline=0,
+                                              command=lambda: self.changeToolSize(current_tool_size - 1))
+        self.size_decrease_button.grid(row=0, column=2, padx=15, pady=5, sticky=tk.N)
+        self.size_increase_button = tk.Button(text='+', command=lambda: self.changeToolSize(current_tool_size + 1))
+        self.size_increase_button.grid(row=0, column=3, padx=15, pady=5, sticky=tk.N)
+
+
+# class to display new change image size window
+>>>>>>> Stashed changes
 class ImageSizeWindow(object):
     def __init__(self, root):
         self.image_height = tk.IntVar()
@@ -315,6 +413,12 @@ class Application(tk.Frame):
         self.current_color = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
     def change_tool(self, tool):
+<<<<<<< Updated upstream
+=======
+        global current_tool
+        global current_tool_type
+        current_tool_type = tool
+>>>>>>> Stashed changes
         if tool == 0:
             self.TOOL_BUTTON.config(image=self.IMAGES['brush'])
             self.TOOL_BUTTON.image = self.IMAGES['brush']
