@@ -88,6 +88,7 @@ class ToolsConfigPanel(object):
         global current_tool
         global current_tool_size
         global current_tool_type
+        print("somasmdmasdasdjasd", newSize)
         if newSize >= self.minToolSize and newSize <= self.maxToolSize:
             self.tool_size.set(newSize)
             current_tool_size = newSize
@@ -98,15 +99,15 @@ class ToolsConfigPanel(object):
             self.tool_size.set(self.maxToolSize)
             current_tool_size = self.maxToolSize
         if current_tool_type == 0:
-            Br.b_brush = Br.brush(Br.influence_brush, 1, current_tool_size, 0, 1.0)
+            Br.b_brush = Br.Brush(Br.influence_brush, current_tool_size, 1, 0, 1.0)
             Br.brush = Br.b_brush.get_transformed_brush()
             current_tool = Br.brush
         elif current_tool_type == 1:
-            Br.b_pencil = Br.brush(Br.influence_pencil, 1, current_tool_size, 0, 1.0)
+            Br.b_pencil = Br.Brush(Br.influence_pencil, current_tool_size, 1, 0, 1.0)
             Br.pencil = Br.b_pencil.get_transformed_brush()
             current_tool = Br.pencil
         elif current_tool_type == 2:
-            Br.b_spray = Br.brush(Br.influence_spray, 1, current_tool_size, 0, 1.0)
+            Br.b_spray = Br.Brush(Br.influence_spray, current_tool_size, 1, 0, 1.0)
             Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
         # self.size_entry.config(takefocus=0)
