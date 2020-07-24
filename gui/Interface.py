@@ -11,7 +11,16 @@ from camera import Camera
 import brushes.Brushes as Br
 from gui import ConfigManager
 
+<<<<<<< HEAD
 current_tool = Br.brush
+=======
+<<<<<<< Updated upstream
+=======
+current_tool = Br.brush
+current_tool_size = 5
+current_tool_type = 0
+>>>>>>> Stashed changes
+>>>>>>> GUI-patches
 
 # Class to auto hide/show scrollbar
 class AutoScrollbar(tk.Scrollbar):
@@ -60,14 +69,27 @@ class ToolTip(object):
         if tw:
             tw.destroy()
 
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+=======
+>>>>>>> GUI-patches
 # class to display current tool config panel
 class ToolsConfigPanel(object):
     def __init__(self, root, frame, panelNumber=0):
         global current_tool
+<<<<<<< HEAD
         self.frame = frame
         self.panelNumber = panelNumber
         self.tool_size = tk.IntVar()
         self.minToolSize = 10
+=======
+        global current_tool_size
+        self.frame = frame
+        self.panelNumber = panelNumber
+        self.tool_size = tk.IntVar()
+        self.minToolSize = 1
+>>>>>>> GUI-patches
         self.maxToolSize = 50
         self.vcmd = (root.register(self.digitOnlyTextEntryCallback))
         self.changePanel(self.panelNumber)
@@ -82,6 +104,7 @@ class ToolsConfigPanel(object):
     # provides the correct value of the variable
     def changeToolSize(self, newSize):
         global current_tool
+<<<<<<< HEAD
         # if newSize >= self.minToolSize and newSize <= self.maxToolSize:
         #     self.tool_size.set(newSize)
         #     current_tool = newSize
@@ -91,6 +114,32 @@ class ToolsConfigPanel(object):
         # elif newSize > self.maxToolSize:
         #     self.tool_size.set(self.maxToolSize)
         #     current_tool = self.maxToolSize
+=======
+        global current_tool_size
+        global current_tool_type
+        if newSize >= self.minToolSize and newSize <= self.maxToolSize:
+            self.tool_size.set(newSize)
+            current_tool_size = newSize
+        elif newSize < self.minToolSize:
+            self.tool_size.set(self.minToolSize)
+            current_tool_size = self.minToolSize
+        elif newSize > self.maxToolSize:
+            self.tool_size.set(self.maxToolSize)
+            current_tool_size = self.maxToolSize
+        if current_tool_type == 0:
+            Br.b_brush = Br.brush(Br.influence_brush, 1, current_tool_size, 0, 1.0)
+            Br.brush = Br.b_brush.get_transformed_brush()
+            current_tool = Br.brush
+        elif current_tool_type == 1:
+            Br.b_pencil = Br.brush(Br.influence_pencil, 1, current_tool_size, 0, 1.0)
+            Br.pencil = Br.b_pencil.get_transformed_brush()
+            current_tool = Br.pencil
+        elif current_tool_type == 2:
+            Br.b_spray = Br.brush(Br.influence_spray, 1, current_tool_size, 0, 1.0)
+            Br.spray = Br.b_spray.get_transformed_brush()
+            current_tool = Br.spray
+
+>>>>>>> GUI-patches
 
     # change current panel
     def changePanel(self, panelNumber):
@@ -98,10 +147,15 @@ class ToolsConfigPanel(object):
             self.panelNumber = 0
             self.emptyPanel()
         elif panelNumber == 1:
+<<<<<<< HEAD
             self.panelNumber = 0
             self.emptyPanel()
             # self.panelNumber = 1
             # self.toolsPanel()
+=======
+            self.panelNumber = 1
+            self.toolsPanel()
+>>>>>>> GUI-patches
 
     # default empty panel if no tools choosen
     def emptyPanel(self):
@@ -125,16 +179,29 @@ class ToolsConfigPanel(object):
                                     validatecommand=(self.vcmd, '%P'))
         self.size_entry.grid(row=0, column=1)
         self.size_entry.bind('<Return>', lambda: self.changeToolSize(self.tool_size.get()))
+<<<<<<< HEAD
         print("Current size: ", current_tool.sizeCurrent)
         self.tool_size.set(current_tool.sizeCurrent)
         self.size_decrease_button = tk.Button(label='-', underline=0,
                                               command=lambda: self.changeToolSize(current_tool.sizeCurrent - 1))
         self.size_decrease_button.grid(row=0, column=2, padx=15, pady=5, sticky=tk.N)
         self.size_increase_button = tk.Button(label='+', underline=0, command=lambda: self.changeToolSize(current_tool.sizeCurrent + 1))
+=======
+        print("Current size: ", current_tool_size)
+        self.tool_size.set(current_tool_size)
+        self.size_decrease_button = tk.Button(text='-', underline=0,
+                                              command=lambda: self.changeToolSize(current_tool_size - 1))
+        self.size_decrease_button.grid(row=0, column=2, padx=15, pady=5, sticky=tk.N)
+        self.size_increase_button = tk.Button(text='+', command=lambda: self.changeToolSize(current_tool_size + 1))
+>>>>>>> GUI-patches
         self.size_increase_button.grid(row=0, column=3, padx=15, pady=5, sticky=tk.N)
 
 
 # class to display new change image size window
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> GUI-patches
 class ImageSizeWindow(object):
     def __init__(self, root):
         self.image_height = tk.IntVar()
@@ -319,7 +386,16 @@ class Application(tk.Frame):
         self.current_color = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
     def change_tool(self, tool):
+<<<<<<< HEAD
         global current_tool
+=======
+<<<<<<< Updated upstream
+=======
+        global current_tool
+        global current_tool_type
+        current_tool_type = tool
+>>>>>>> Stashed changes
+>>>>>>> GUI-patches
         if tool == 0:
             self.TOOL_BUTTON.config(image=self.IMAGES['brush'])
             self.TOOL_BUTTON.image = self.IMAGES['brush']
