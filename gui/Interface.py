@@ -66,6 +66,7 @@ class ToolTip(object):
 # class to display current tool config panel
 class ToolsConfigPanel(object):
     def __init__(self, root, frame, panelNumber=0):
+        self.root = root
         global current_tool_size
         self.frame = frame
         self.panelNumber = panelNumber
@@ -108,6 +109,7 @@ class ToolsConfigPanel(object):
             Br.b_spray = Br.brush(Br.influence_spray, 1, current_tool_size, 0, 1.0)
             Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
+        # self.size_entry.config(takefocus=0)
 
     # change current panel
     def changePanel(self, panelNumber):
@@ -142,11 +144,21 @@ class ToolsConfigPanel(object):
         self.size_entry.bind('<Return>', lambda: self.changeToolSize(self.tool_size.get()))
         print("Current size: ", current_tool_size)
         self.tool_size.set(current_tool_size)
-        self.size_decrease_button = tk.Button(text='-', underline=0,
+        self.size_decrease_button = tk.Button(self.frame, text='-', width=1,
                                               command=lambda: self.changeToolSize(current_tool_size - 1))
-        self.size_decrease_button.grid(row=0, column=2, padx=15, pady=5, sticky=tk.N)
-        self.size_increase_button = tk.Button(text='+', command=lambda: self.changeToolSize(current_tool_size + 1))
-        self.size_increase_button.grid(row=0, column=3, padx=15, pady=5, sticky=tk.N)
+        self.size_decrease_button.grid(row=0, column=2, padx=5, pady=1, sticky=tk.N)
+        self.size_increase_button = tk.Button(self.frame, text='+', width=1,
+                                              command=lambda: self.changeToolSize(current_tool_size + 1))
+        self.size_increase_button.grid(row=0, column=3, padx=5, pady=1, sticky=tk.N)
+        # empty space
+        self.TEMP_LABEL_1 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_2 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_2.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_3 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_3.grid(row=3, column=0, padx=5, pady=5, sticky=tk.N)
+        self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
 
 
 # class to display new change image size window
@@ -349,7 +361,6 @@ class Application(tk.Frame):
             self.TOOL_BUTTON.config(image=self.IMAGES['spray'])
             self.TOOL_BUTTON.image = self.IMAGES['spray']
             current_tool = Br.spray
-        # self.create_widgets_toolsconfig(1)
         self.toolsConfigPanel(1)
 
     def change_selection(self, type):
@@ -458,19 +469,6 @@ class Application(tk.Frame):
     def recent(self):
         self.config.read()
         self.config.display_config()
-        # path = self.config.config['RECENT_IMAGES']['first']
-        # path = self.config.config['RECENT_IMAGES']['second']
-        # if path != 'none':
-        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
-        # path = self.config.config['RECENT_IMAGES']['third']
-        # if path != 'none':
-        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
-        # path = self.config.config['RECENT_IMAGES']['fourth']
-        # if path != 'none':
-        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
-        # path = self.config.config['RECENT_IMAGES']['fifth']
-        # if path != 'none':
-        #     self.RECENT_MENU.add_command(label=path, command=lambda: self.quick_open_project(path))
 
     # EDIT MENU METHODS
     def undo(self):
@@ -673,47 +671,6 @@ class Application(tk.Frame):
 
         widget.bind('<Enter>', enter)
         widget.bind('<Leave>', leave)
-
-    # CREATE WIDGETS IN TOOLS CONFIG PANEL
-
-    def create_widgets_toolsconfig(self, tool):
-        global current_tool
-        if tool == 0:     # none
-            self.TEMP_LABEL_0 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
-            self.TEMP_LABEL_0.grid(row=0, column=0, padx=5, pady=5, sticky=tk.N)
-            self.TEMP_LABEL_1 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
-            self.TEMP_LABEL_1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
-            self.TEMP_LABEL_2 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
-            self.TEMP_LABEL_2.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
-            self.TEMP_LABEL_3 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
-            self.TEMP_LABEL_3.grid(row=3, column=0, padx=5, pady=5, sticky=tk.N)
-            self.TEMP_LABEL_4 = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="", bg="white", compound=tk.CENTER)
-            self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
-        elif tool == 1:   # tools
-            self.tool_size = tk.IntVar()
-            self.vcmd = (root.register(self.digitOnlyTextEntryCallback))
-            self.size_label = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="Size", bg="white")
-            self.size_label.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
-            self.size_entry = ttk.Entry(self.SUB_TOOLS_FRAME_3, width=4, validate='all', textvariable=self.tool_size,
-                                        validatecommand=(self.vcmd, '%P'))
-            self.size_entry.grid(row=0, column=1)
-            print("Current size: ", current_tool.sizeCurrent)
-            self.tool_size.set(current_tool.sizeCurrent)
-            self.size_increase_button = tk.Button(label='+', underline=0, command=lambda: self.change_tool(1))
-
-            # self.size_slider_val = 50.0
-            # self.size_slider_str = "50.0"
-            # self.SIZE_SLIDER_LABEL = tk.Label(self.SUB_TOOLS_FRAME_3, bd=0, text="Size", bg="white")
-            # self.SIZE_SLIDER_LABEL.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
-            # self.SIZE_ENTRY = ttk.Entry(self.SUB_TOOLS_FRAME_3, width=5, textvariable=self.size_slider_str,
-            #                             validatecommand=lambda: self.slider_validate(self.size_slider_str, 0))
-            # self.SIZE_ENTRY.grid(row=0, column=1, padx=5, pady=1, sticky=tk.N)
-            # self.SIZE_SLIDER = tk.Scale(self.SUB_TOOLS_FRAME_3, orient=tk.HORIZONTAL, bg="white", from_=0.1, to=100.0,
-            #                             resolution=0.1, length=80, sliderlength=5, showvalue=0, variable=self.size_slider_val)
-            # self.SIZE_SLIDER.grid(row=1, column=0, columnspan=2, padx=5, pady=1, sticky=tk.N)
-            # self.SIZE_SLIDER.set(self.size_slider_val)
-
-
 
     # CREATING ALL WIDGETS IN MAIN WINDOW
 
@@ -928,9 +885,8 @@ class Application(tk.Frame):
         self.create_tool_tip(self.DESATURATION_BUTTON, "Desaturation")
 
         # TOOLS SUB FRAME WIDGETS
-        # clear toolsconfig window
+
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, 1)
-        # self.create_widgets_toolsconfig(0)
 
         # IMAGE FRAME WIDGETS
 
@@ -995,10 +951,7 @@ class Application(tk.Frame):
         self.parent.title("Camera Paint")
         self.parent.geometry('1280x720')
         self.parent.resizable(width=True, height=True)
-        self.grid(sticky=tk.W + tk.E + tk.N + tk.S, padx=20, pady=20)
-        # self.rowconfigure(0, weight=1)
-        # self.columnconfigure(0, weight=0)
-        # self.columnconfigure(1, weight=1)
+        self.grid(sticky=tk.NSEW)
         self.initialize_images()
         self.create_widgets()
 
@@ -1009,7 +962,6 @@ class Application(tk.Frame):
 
 root = tk.Tk()
 app = Application(parent=root)
-app.pack(fill="both", expand=True)
 app.mainloop()
 try:
     root.destroy()
