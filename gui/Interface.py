@@ -14,6 +14,7 @@ from gui import ConfigManager
 current_tool = Br.brush
 current_tool_size = 5
 current_tool_type = 0
+current_tool_opacity = 1.0
 
 
 # Class to auto hide/show scrollbar
@@ -65,15 +66,19 @@ class ToolTip(object):
 
 # class to display current tool config panel
 class ToolsConfigPanel(object):
-    def __init__(self, root, frame, panelNumber=0):
+    def __init__(self, root, frame, images, panelNumber=0):
+        self.images = images
         self.root = root
-        global current_tool_size
         self.frame = frame
         self.panelNumber = panelNumber
         self.tool_size = tk.IntVar()
+        self.tool_opacity = tk.IntVar()
         self.minToolSize = 1
-        self.maxToolSize = 50
+        self.maxToolSize = 20
+        self.minToolOpacity = 0.0
+        self.maxToolOpacity = 1.0
         self.vcmd = (root.register(self.digitOnlyTextEntryCallback))
+        self.vcmd2 = (root.register(self.digitdotOnlyTextEntryCallback))
         self.changePanel(self.panelNumber)
 
     # callback method for digit only text entry widget
@@ -83,12 +88,21 @@ class ToolsConfigPanel(object):
         else:
             return False
 
+    # callback method for digit only text entry widget
+    def digitdotOnlyTextEntryCallback(self, P):
+        if str.isdigit(P) or P == "" or P == ".":
+            return True
+        else:
+            return False
+
     # provides the correct value of the variable
-    def changeToolSize(self, newSize):
+    def changeToolParam(self, newSize, newOpacity):
         global current_tool
         global current_tool_size
         global current_tool_type
+        global current_tool_opacity
         print("somasmdmasdasdjasd", newSize)
+        # checking new size
         if newSize >= self.minToolSize and newSize <= self.maxToolSize:
             self.tool_size.set(newSize)
             current_tool_size = newSize
@@ -98,19 +112,37 @@ class ToolsConfigPanel(object):
         elif newSize > self.maxToolSize:
             self.tool_size.set(self.maxToolSize)
             current_tool_size = self.maxToolSize
+        # checking new opacity
+        if newOpacity >= self.minToolOpacity and newOpacity <= self.maxToolOpacity:
+            self.tool_opacity.set(newOpacity)
+            current_tool_opacity = newOpacity
+        elif newOpacity < self.minToolOpacity:
+            self.tool_opacity.set(self.minToolOpacity)
+            current_tool_opacity = self.minToolOpacity
+        elif newOpacity > self.maxToolOpacity:
+            self.tool_opacity.set(self.maxToolOpacity)
+            current_tool_opacity = self.maxToolOpacity
+        #if len(current_tool_opacity) > 3:
+        current_tool_opacity = newOpacity[:3]
+        self.tool_opacity.set(newOpacity[:3])
+        # checking current tool
         if current_tool_type == 0:
-            Br.b_brush = Br.Brush(Br.influence_brush, current_tool_size, 1, 0, 1.0)
+            Br.b_brush = Br.Brush(Br.influence_brush, current_tool_size, 1, 0, current_tool_opacity)
             Br.brush = Br.b_brush.get_transformed_brush()
             current_tool = Br.brush
         elif current_tool_type == 1:
-            Br.b_pencil = Br.Brush(Br.influence_pencil, current_tool_size, 1, 0, 1.0)
+            Br.b_pencil = Br.Brush(Br.influence_pencil, current_tool_size, 1, 0, current_tool_opacity)
             Br.pencil = Br.b_pencil.get_transformed_brush()
             current_tool = Br.pencil
         elif current_tool_type == 2:
-            Br.b_spray = Br.Brush(Br.influence_spray, current_tool_size, 1, 0, 1.0)
+            Br.b_spray = Br.Brush(Br.influence_spray, current_tool_size, 1, 0, current_tool_opacity)
             Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
         # self.size_entry.config(takefocus=0)
+
+    # provides the correct value of the variable
+    def changeToolOpacity(self, newOpacity):
+        None
 
     # change current panel
     def changePanel(self, panelNumber):
@@ -137,27 +169,40 @@ class ToolsConfigPanel(object):
      # panel for painting tools: spray, pencil, brush
     def toolsPanel(self):
         global current_tool
+
+        # size config widgets
         self.size_label = tk.Label(self.frame, bd=0, text="Size", bg="white")
         self.size_label.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
         self.size_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.tool_size,
                                     validatecommand=(self.vcmd, '%P'))
-        self.size_entry.grid(row=0, column=1)
-        self.size_entry.bind('<Return>', lambda: self.changeToolSize(self.tool_size.get()))
+        self.size_entry.grid(row=1, column=0)
+        self.size_entry.bind('<Return>', lambda: self.changeToolParam(self.tool_size.get(), current_tool_opacity))
         print("Current size: ", current_tool_size)
         self.tool_size.set(current_tool_size)
-        self.size_decrease_button = tk.Button(self.frame, text='-', width=1,
-                                              command=lambda: self.changeToolSize(current_tool_size - 1))
-        self.size_decrease_button.grid(row=0, column=2, padx=5, pady=1, sticky=tk.N)
-        self.size_increase_button = tk.Button(self.frame, text='+', width=1,
-                                              command=lambda: self.changeToolSize(current_tool_size + 1))
-        self.size_increase_button.grid(row=0, column=3, padx=5, pady=1, sticky=tk.N)
+        self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
+                                              command=lambda: self.changeToolParam(current_tool_size - 1, current_tool_opacity))
+        self.size_decrease_button.grid(row=1, column=1, padx=5, pady=1, sticky=tk.N)
+        self.size_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
+                                              command=lambda: self.changeToolParam(current_tool_size + 1, current_tool_opacity))
+        self.size_increase_button.grid(row=1, column=2, padx=5, pady=1, sticky=tk.N)
+
+        # opacity config widgets
+        self.opacity_label = tk.Label(self.frame, bd=0, text="Opacity", bg="white")
+        self.opacity_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
+        self.opacity_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.tool_opacity,
+                                    validatecommand=(self.vcmd2, '%P'))
+        self.opacity_entry.grid(row=3, column=0)
+        self.opacity_entry.bind('<Return>', lambda: self.changeToolParam(current_tool_size, self.tool_opacity.get()))
+        print("Current opacity: ", current_tool_opacity)
+        self.tool_opacity.set(current_tool_opacity)
+        self.opacity_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
+                                              command=lambda: self.changeToolParam(current_tool_size, current_tool_opacity - 0.1))
+        self.opacity_decrease_button.grid(row=3, column=1, padx=5, pady=1, sticky=tk.N)
+        self.opacity_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
+                                              command=lambda: self.changeToolParam(current_tool_size, current_tool_opacity + 0.1))
+        self.opacity_increase_button.grid(row=3, column=2, padx=5, pady=1, sticky=tk.N)
+
         # empty space
-        self.TEMP_LABEL_1 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
-        self.TEMP_LABEL_1.grid(row=1, column=0, padx=5, pady=5, sticky=tk.N)
-        self.TEMP_LABEL_2 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
-        self.TEMP_LABEL_2.grid(row=2, column=0, padx=5, pady=5, sticky=tk.N)
-        self.TEMP_LABEL_3 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
-        self.TEMP_LABEL_3.grid(row=3, column=0, padx=5, pady=5, sticky=tk.N)
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
         self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
 
@@ -349,18 +394,25 @@ class Application(tk.Frame):
     def change_tool(self, tool):
         global current_tool
         global current_tool_type
+        global current_tool_opacity
         current_tool_type = tool
         if tool == 0:
             self.TOOL_BUTTON.config(image=self.IMAGES['brush'])
             self.TOOL_BUTTON.image = self.IMAGES['brush']
+            Br.b_brush = Br.Brush(Br.influence_brush, current_tool_size, 1, 0, current_tool_opacity)
+            Br.brush = Br.b_brush.get_transformed_brush()
             current_tool = Br.brush
         elif tool == 1:
             self.TOOL_BUTTON.config(image=self.IMAGES['pencil'])
             self.TOOL_BUTTON.image = self.IMAGES['pencil']
+            Br.b_pencil = Br.Brush(Br.influence_pencil, current_tool_size, 1, 0, current_tool_opacity)
+            Br.pencil = Br.b_pencil.get_transformed_brush()
             current_tool = Br.pencil
         elif tool == 2:
             self.TOOL_BUTTON.config(image=self.IMAGES['spray'])
             self.TOOL_BUTTON.image = self.IMAGES['spray']
+            Br.b_spray = Br.Brush(Br.influence_spray, current_tool_size, 1, 0, current_tool_opacity)
+            Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
         self.toolsConfigPanel(1)
 
@@ -582,6 +634,8 @@ class Application(tk.Frame):
         text = tk.PhotoImage(file=r"data/font.png")
         saturation = tk.PhotoImage(file=r"data/saturation.png")
         red_colour = tk.PhotoImage(file=r"data/redColour.png")
+        plus = tk.PhotoImage(file=r"data/plus.png")
+        minus = tk.PhotoImage(file=r"data/minus.png")
         self.IMAGES['brush'] = brush
         self.IMAGES['pencil'] = pencil
         self.IMAGES['spray'] = spray
@@ -596,6 +650,8 @@ class Application(tk.Frame):
         self.IMAGES['text'] = text
         self.IMAGES['redColour'] = red_colour
         self.IMAGES['saturation'] = saturation
+        self.IMAGES['plus'] = plus
+        self.IMAGES['minus'] = minus
 
     def reload_recent_menu(self):
         self.RECENT_MENU.delete(0, self.RECENT_MENU.index("end"))
@@ -887,7 +943,7 @@ class Application(tk.Frame):
 
         # TOOLS SUB FRAME WIDGETS
 
-        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, 1)
+        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 1)
 
         # IMAGE FRAME WIDGETS
 
