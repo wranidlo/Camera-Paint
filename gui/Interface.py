@@ -579,9 +579,9 @@ class Application(tk.Frame):
         if self.window_width != root.winfo_width() or self.window_height != root.winfo_height():
             self.window_height = root.winfo_height()
             self.window_width = root.winfo_width()
-            temp_width = self.window_width - 100
+            temp_width = self.window_width - 108
             temp_height = self.window_height
-            temp2_width = self.window_width - 144
+            temp2_width = self.window_width - 152
             temp2_height = self.window_height - 20
             self.IMAGE_FRAME.config(width=temp_width, height=temp_height)
             self.display.config(width=temp2_width, height=temp2_height)
