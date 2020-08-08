@@ -72,7 +72,7 @@ class ToolsConfigPanel(object):
         self.frame = frame
         self.panelNumber = panelNumber
         self.tool_size = tk.IntVar()
-        self.tool_opacity = tk.IntVar()
+        self.tool_opacity = tk.DoubleVar()
         self.minToolSize = 1
         self.maxToolSize = 20
         self.minToolOpacity = 0.0
@@ -97,12 +97,13 @@ class ToolsConfigPanel(object):
 
     # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
+        print("new size: ", newSize, " new opacity: ", newOpacity)
         global current_tool
         global current_tool_size
         global current_tool_type
         global current_tool_opacity
-        print("somasmdmasdasdjasd", newSize)
         # checking new size
+        newOpacity = round(newOpacity, 2)
         if newSize >= self.minToolSize and newSize <= self.maxToolSize:
             self.tool_size.set(newSize)
             current_tool_size = newSize
@@ -114,17 +115,20 @@ class ToolsConfigPanel(object):
             current_tool_size = self.maxToolSize
         # checking new opacity
         if newOpacity >= self.minToolOpacity and newOpacity <= self.maxToolOpacity:
+            print("pomiedzy")
             self.tool_opacity.set(newOpacity)
             current_tool_opacity = newOpacity
         elif newOpacity < self.minToolOpacity:
-            self.tool_opacity.set(self.minToolOpacity)
+            print("mniej")
+            self.tool_opacity.set(0.0)
             current_tool_opacity = self.minToolOpacity
         elif newOpacity > self.maxToolOpacity:
+            print("wincej")
             self.tool_opacity.set(self.maxToolOpacity)
             current_tool_opacity = self.maxToolOpacity
         #if len(current_tool_opacity) > 3:
-        current_tool_opacity = newOpacity[:3]
-        self.tool_opacity.set(newOpacity[:3])
+        current_tool_opacity = newOpacity
+        self.tool_opacity.set(newOpacity)
         # checking current tool
         if current_tool_type == 0:
             Br.b_brush = Br.Brush(Br.influence_brush, current_tool_size, 1, 0, current_tool_opacity)
@@ -139,10 +143,6 @@ class ToolsConfigPanel(object):
             Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
         # self.size_entry.config(takefocus=0)
-
-    # provides the correct value of the variable
-    def changeToolOpacity(self, newOpacity):
-        None
 
     # change current panel
     def changePanel(self, panelNumber):
