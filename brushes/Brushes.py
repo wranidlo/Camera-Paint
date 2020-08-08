@@ -142,7 +142,8 @@ def draw(x: int, y: int, shape, color):
         for j in range(0, len(shape[0])):
             if not is_out_of_bounds(canvas_matrix, x+i, y+j):
                 for k in range(0, 3):
-                    c = limit_color_value(int(canvas_matrix[x+i, y+j, k]*(1-shape[i, j]))+(int(shape[i, j]*color[k])))
+                    c = limit_color_value(np.average([canvas_matrix[x+i, y+j, k],color[k]], weights=[1-shape[i, j], shape[i, j]] ))
+                    # c = limit_color_value(int(canvas_matrix[x+i, y+j, k]*(1-shape[i, j]))+(int(shape[i, j]*color[k])))
                     canvas_matrix[x+i, y+j, k] = c
     refresh_temp()
 
