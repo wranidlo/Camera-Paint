@@ -359,6 +359,7 @@ class Application(tk.Frame):
                     self.painting_flag = False
                     self.usage.cap.release()
                     self.PAINT_BUTTON.config(text="Paint mode", bg="green")
+                    Br.save_step()
                     self.check_if_showing_painting = False
                     self.show_image(Br.canvas_matrix_temp)
 
@@ -526,9 +527,11 @@ class Application(tk.Frame):
     # EDIT MENU METHODS
     def undo(self):
         Br.b_undo()
+        self.show_image(Br.canvas_matrix_temp)
 
     def redo(self):
         Br.b_redo()
+        self.show_image(Br.canvas_matrix_temp)
 
     def cut(self):
         Br.cut()
