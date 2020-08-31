@@ -563,17 +563,6 @@ class Application(tk.Frame):
         Br.resize(window.image_height, window.image_width)
         self.image_resized()
 
-    # TOOLS MENU METHODS
-    # TODO connect somehow with tools bar
-
-    # SETTINGS MENU METHODS
-    def preferences(self):
-        None
-        # TODO connect with BRUSHES
-
-    def shortcuts(self):
-        None
-        # TODO connect with BRUSHES
 
     # EVENTS METHODS
 
@@ -785,12 +774,6 @@ class Application(tk.Frame):
         self.TOOLS_MENU.add_command(label='Pick color')
         self.TOOLS_MENU.add_command(label='Zoom')
         self.TOOLS_MENU.add_command(label='Text')
-
-        # settings menu
-        self.SETTINGS_MENU = tk.Menu(self.MENU, tearoff=0)
-        self.MENU.add_cascade(label='Settings', menu=self.SETTINGS_MENU)
-        self.SETTINGS_MENU.add_command(label='Preferences', command=lambda: self.preferences())
-        self.SETTINGS_MENU.add_command(label='Shortcuts', command=lambda: self.shortcuts())
 
         # FRAMES
 
