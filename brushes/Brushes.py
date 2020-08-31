@@ -296,15 +296,17 @@ def selector_Circle(center_pos, end_pos):  # expected tuple(x, y) as position
 
 # LOADING IMAGE
 
+
 def load(new_matrix):
-    global canvas_matrix_temp
+    global canvas_matrix
     new_x = new_matrix.shape[0]
     new_y = new_matrix.shape[1]
-    old_x = canvas_matrix_temp.shape[0]
-    old_y = canvas_matrix_temp.shape[1]
+    old_x = canvas_matrix.shape[0]
+    old_y = canvas_matrix.shape[1]
     if new_x != old_x or new_y != old_y:
         resize(x, y)
-    canvas_matrix_temp = new_matrix
+    canvas_matrix = new_matrix
+    refresh_temp()
 
 # SIZING IMAGE
 
@@ -434,6 +436,8 @@ def cut():
 
 def refresh_temp():
     global canvas_matrix, canvas_matrix_temp
+    canvas_matrix.setflags(write=1)
+    canvas_matrix_temp.setflags(write=1)
     np.copyto(canvas_matrix_temp, canvas_matrix)
     selection_apply()
 

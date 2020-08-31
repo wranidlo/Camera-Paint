@@ -8,7 +8,7 @@ import numpy as np
 def masking_histogram(frame, histogram):
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     dst = cv2.calcBackProject([hsv], [0, 1], histogram, [0, 180, 0, 256], 1)
-    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))
+    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (21, 21))
     cv2.filter2D(dst, -1, disc, dst)
     ret, thresh = cv2.threshold(dst, 200, 255, cv2.THRESH_BINARY)
     thresh = cv2.merge((thresh, thresh, thresh))
@@ -26,8 +26,8 @@ def centroid(max_contours):
 
 def contours(histogram_mask):
     gray_hist_mask_image = cv2.cvtColor(histogram_mask, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(gray_hist_mask_image, 0, 255, 0)
-    contour, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    _, thresh = cv2.threshold(gray_hist_mask_image, 0, 255, 0)
+    contour, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     return contour
 
 
@@ -159,16 +159,15 @@ class camera:
 
         if self.histogram_created_check:
             hist_masked_image = masking_histogram(frame, self.histogram)
-            erode_kernel = np.ones((5, 5), np.uint8)
-            dilate_kernel = np.ones((5, 5), np.uint8)
-            hist_masked_image = cv2.erode(hist_masked_image, erode_kernel)
-            hist_masked_image = cv2.dilate(hist_masked_image, dilate_kernel)
+            kernel = np.ones((5, 5), np.uint8)
+            hist_masked_image = cv2.erode(hist_masked_image, kernel)
+            hist_masked_image = cv2.dilate(hist_masked_image, kernel)
             contour_list = contours(hist_masked_image)
             try:
                 max_cont = max(contour_list, key=cv2.contourArea)
                 self.last_max_contour = max_cont
             except ValueError:
-                print("out")
+                # print("out")
                 max_cont = self.last_max_contour
             cnt_centroid = centroid(max_cont)
             cv2.circle(frame, cnt_centroid, 5, [255, 0, 255], -1)

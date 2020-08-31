@@ -368,16 +368,16 @@ class Application(tk.Frame):
         if self.check_if_showing_painting:
             img, loc = self.usage.get_center()
             x, y = loc
-            print("Center fom camera - ", x, y)
+            # print("Center fom camera - ", x, y)
             x = int(Br.size_x / self.usage.rows) * x
             y = int(Br.size_y / self.usage.cols) * y
-            print("Center fom image- ", x, y)
+            # print("Center fom image- ", x, y)
             if self.painting_flag:
                 Br.draw(y, x, current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()
             cv2.circle(tmp, (x, y), 5, [0, 0, 0], -1)
             self.show_image(tmp)
-            self.display.after(10, self.draw_something)
+            self.display.after(1, self.draw_something)
 
     # displaying image BRUSHES
     def show_image(self, image):
@@ -442,7 +442,7 @@ class Application(tk.Frame):
 
     def use_pick_color(self):
         _, x_y = self.usage.get_center()
-        self.current_color = Br.canvas_matrix[x_y[0]][x_y[1]]
+        self.current_color = Br.canvas_matrix[x_y[1]][x_y[0]]
 
     def use_zoom(self):
         None
@@ -484,7 +484,7 @@ class Application(tk.Frame):
                 self.OBJECT_TO_DISPLAY_IMAGE = Image.open(self.path_to_save)
                 self.OBJECT_TO_DISPLAY_IMAGE.load()
                 # Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
-                Br.load(np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
+                Br.load(np.array(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
                 self.show_image(Br.canvas_matrix_temp)
         else:
             response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
@@ -496,7 +496,7 @@ class Application(tk.Frame):
         self.OBJECT_TO_DISPLAY_IMAGE = Image.open(path)
         self.OBJECT_TO_DISPLAY_IMAGE.load()
         # Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
-        Br.load(np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
+        Br.load(np.array(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
         self.path_to_save = path
         self.config.add_recent(self.path_to_save)
         self.reload_recent_menu()
