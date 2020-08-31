@@ -556,6 +556,17 @@ class Application(tk.Frame):
             self.VIEW_MENU.entryconfigure(1, label="Exit fullscreen")
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
 
+    def block_resize(self):
+        if self.blockWindowSizeFlaf:
+            self.blockWindowSizeFlaf = False
+            self.parent.resizable(width=True, height=True)
+            self.VIEW_MENU.entryconfigure(2, label="Block window size")
+        else:
+            self.blockWindowSizeFlaf = True
+            self.parent.resizable(width=False, height=False)
+            self.VIEW_MENU.entryconfigure(2, label="Unblock window size")
+
+
     # IMAGE MENU METHODS
     def size_image(self):
         window = ImageSizeWindow(root)
@@ -758,6 +769,7 @@ class Application(tk.Frame):
         self.VIEW_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='View', menu=self.VIEW_MENU)
         self.VIEW_MENU.add_command(label='Fullscreen', command=lambda: self.full_screen())
+        self.VIEW_MENU.add_command(label='Block window size', command=lambda: self.block_resize())
 
         # image menu
         self.IMAGE_MENU = tk.Menu(self.MENU, tearoff=0)
@@ -981,6 +993,7 @@ class Application(tk.Frame):
         self.fullScreenStateFlag = False
         self.savedFlag = True
         self.painting_flag = False
+        self.blockWindowSizeFlaf = False
         # GLOBAL EVENTS
         self.parent.bind("<space>", self.painting_activator)
         # self.parent.bind("<Configure>", self.windows_resized)
