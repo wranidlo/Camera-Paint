@@ -16,6 +16,7 @@ current_tool = Br.brush
 current_tool_size = 3
 current_tool_type = 0
 current_tool_opacity = 1.0
+text_to_draw = ""
 
 
 # Class to auto hide/show scrollbar
@@ -98,9 +99,10 @@ class ToolsConfigPanel(object):
             return False
 
     # provides the correct value of the variable
-    def changeTextParam(self, newSize, newText):
-        None
-        # TODO for Papryk
+    def changeTextParam(self, event):
+        global text_to_draw
+        print(self.text.get())
+        text_to_draw = self.text.get()
 
     # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
@@ -237,10 +239,10 @@ class ToolsConfigPanel(object):
         # text config widgets
         self.text_label = tk.Label(self.frame, bd=0, text="Text", bg="white")
         self.text_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
+        global text_to_draw
         self.text_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.text)
         self.text_entry.grid(row=3, column=0)
-        self.text_entry.bind('<Return>', lambda: self.changeTextParam(current_tool_size, self.text.get()))
-        self.text.set("")
+        self.text_entry.bind('<Return>', self.changeTextParam)
         # empty space
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
         self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
@@ -472,15 +474,18 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def use_text(self):
-        self.clearConfigPanel()
-        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 2)
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        _, loc = self.usage.get_center()
-        x, y = loc
-        cv2.putText(Br.canvas_matrix, "text", (x, y), font, current_tool_size, self.current_color, 1, cv2.LINE_AA)
-        Br.canvas_matrix_temp = Br.canvas_matrix
-        self.show_image(Br.canvas_matrix_temp)
-        Br.save_step()
+        global text_to_draw
+        if len(text_to_draw) == 0:
+            self.clearConfigPanel()
+            self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 2)
+        if self.check_if_showing_painting:
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            _, loc = self.usage.get_center()
+            x, y = loc
+            cv2.putText(Br.canvas_matrix, text_to_draw, (x, y), font, current_tool_size, self.current_color, 1, cv2.LINE_AA)
+            Br.canvas_matrix_temp = Br.canvas_matrix
+            self.show_image(Br.canvas_matrix_temp)
+            Br.save_step()
 
 
     def use_desaturation(self):
