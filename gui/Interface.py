@@ -287,37 +287,22 @@ class Application(tk.Frame):
                 cv2.putText(frame, "Very good", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 255, 0),
                             thickness=2)
             else:
-                if quality < 3:
-                    cv2.putText(frame, "Good", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 0, 0),
+                if quality < 6:
+                    cv2.putText(frame, "Good", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(255, 0,),
                                 thickness=2)
                 else:
-                    cv2.putText(frame, "Bad", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 255),
-                                thickness=2)
+                    if quality < 15:
+                        cv2.putText(frame, "Fine", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1,
+                                    color=(0, 255, 255),
+                                    thickness=2)
+                    else:
+                        cv2.putText(frame, "Bad", (20, 200), cv2.FONT_HERSHEY_SIMPLEX, fontScale=1, color=(0, 0, 255),
+                                    thickness=2)
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
             self.display.delete("IMG")
             self.show_image(frame)
             self.display.after(10, self.show_config)
 
-        """
-        self.usage.set_histogram_created_check_not()
-        cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Scan', 800, 600)
-        self.usage.cap = cv2.VideoCapture(0)
-        while self.usage.histogram_created_check is False:
-            frame = self.usage.scan_object()
-            cv2.imshow('Scan', frame)
-            self.original_frame = Image.fromarray(frame)
-            self.frame = ImageTk.PhotoImage(self.original_frame)
-
-            # Creating display space for image/camera view
-            self.display.delete("IMG")
-
-            self.display.create_image(0, 0, image=self.frame, anchor=tk.NW, tags="IMG")
-            self.display.update()
-        self.usage.cap.release()
-
-        cv2.destroyAllWindows()
-        """
 
     # open camera view CAMERA
     def point_view_action(self):
