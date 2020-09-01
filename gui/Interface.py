@@ -74,6 +74,7 @@ class ToolsConfigPanel(object):
         self.panelNumber = panelNumber
         self.tool_size = tk.IntVar()
         self.tool_opacity = tk.DoubleVar()
+        self.text = tk.StringVar()
         self.minToolSize = 1
         self.maxToolSize = 20
         self.minToolOpacity = 0.0
@@ -97,6 +98,11 @@ class ToolsConfigPanel(object):
             return False
 
     # provides the correct value of the variable
+    def changeTextParam(self, newSize, newText):
+        None
+        # TODO for Papryk
+
+    # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
         print("new size: ", newSize, " new opacity: ", newOpacity)
         global current_tool
@@ -116,15 +122,12 @@ class ToolsConfigPanel(object):
             current_tool_size = self.maxToolSize
         # checking new opacity
         if newOpacity >= self.minToolOpacity and newOpacity <= self.maxToolOpacity:
-            print("pomiedzy")
             self.tool_opacity.set(newOpacity)
             current_tool_opacity = newOpacity
         elif newOpacity < self.minToolOpacity:
-            print("mniej")
             self.tool_opacity.set(0.0)
             current_tool_opacity = self.minToolOpacity
         elif newOpacity > self.maxToolOpacity:
-            print("wincej")
             self.tool_opacity.set(self.maxToolOpacity)
             current_tool_opacity = self.maxToolOpacity
         #if len(current_tool_opacity) > 3:
@@ -153,6 +156,9 @@ class ToolsConfigPanel(object):
         elif panelNumber == 1:
             self.panelNumber = 1
             self.toolsPanel()
+        elif panelNumber == 2:
+            self.panelNumber = 2
+            self.textPanel()
 
     # default empty panel if no tools choosen
     def emptyPanel(self):
@@ -203,6 +209,38 @@ class ToolsConfigPanel(object):
                                               command=lambda: self.changeToolParam(current_tool_size, current_tool_opacity + 0.1))
         self.opacity_increase_button.grid(row=3, column=2, padx=5, pady=1, sticky=tk.N)
 
+        # empty space
+        self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
+
+    def textPanel(self):
+        global current_tool
+
+        # size config widgets
+        self.size_label = tk.Label(self.frame, bd=0, text="Size", bg="white")
+        self.size_label.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
+        self.size_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.tool_size,
+                                    validatecommand=(self.vcmd, '%P'))
+        self.size_entry.grid(row=1, column=0)
+        self.size_entry.bind('<Return>', lambda: self.changeToolParam(self.tool_size.get(), current_tool_opacity))
+        print("Current size: ", current_tool_size)
+        self.tool_size.set(current_tool_size)
+        self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
+                                              command=lambda: self.changeToolParam(current_tool_size - 1,
+                                                                                   current_tool_opacity))
+        self.size_decrease_button.grid(row=1, column=1, padx=5, pady=1, sticky=tk.N)
+        self.size_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
+                                              command=lambda: self.changeToolParam(current_tool_size + 1,
+                                                                                   current_tool_opacity))
+        self.size_increase_button.grid(row=1, column=2, padx=5, pady=1, sticky=tk.N)
+
+        # text config widgets
+        self.text_label = tk.Label(self.frame, bd=0, text="Text", bg="white")
+        self.text_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
+        self.text_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.text)
+        self.text_entry.grid(row=3, column=0)
+        self.text_entry.bind('<Return>', lambda: self.changeTextParam(current_tool_size, self.text.get()))
+        self.text.set("")
         # empty space
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
         self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
@@ -402,7 +440,8 @@ class Application(tk.Frame):
             Br.b_spray = Br.Brush(Br.influence_spray, current_tool_size, 1, 0, current_tool_opacity)
             Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
-        self.toolsConfigPanel(1)
+        self.clearConfigPanel()
+        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 1)
 
     def change_selection(self, type):
         if type == 0:
@@ -421,7 +460,8 @@ class Application(tk.Frame):
             self.SELECTION_BUTTON.config(image=self.IMAGES['wandSelection'])
             self.SELECTION_BUTTON.image = self.IMAGES['wandSelection']
             # TODO connect with BRUSHES
-        self.toolsConfigPanel(0)
+        self.clearConfigPanel()
+        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 0)
 
     def use_fill(self):
         _, x_y = self.usage.get_center()
@@ -436,6 +476,8 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def use_text(self):
+        self.clearConfigPanel()
+        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 2)
         font = cv2.FONT_HERSHEY_SIMPLEX
         _, loc = self.usage.get_center()
         x, y = loc
@@ -571,6 +613,13 @@ class Application(tk.Frame):
         Br.canvas_matrix = imutils.rotate(Br.canvas_matrix, angle=degrees)
         Br.canvas_matrix_temp = Br.canvas_matrix
         self.show_image(Br.canvas_matrix_temp)
+
+    # clear config panel
+    def clearConfigPanel(self):
+        self.SUB_TOOLS_FRAME_3.destroy()
+        self.SUB_TOOLS_FRAME_3 = tk.Frame(self.TOOLS_FRAME, bd=1, highlightbackground="gray", highlightthickness=1,
+                                          bg="white")
+        self.SUB_TOOLS_FRAME_3.grid(row=7, column=0, sticky=tk.N + tk.S + tk.W + tk.E, padx=5)
 
     # EVENTS METHODS
 
@@ -941,7 +990,7 @@ class Application(tk.Frame):
         self.create_tool_tip(self.DESATURATION_BUTTON, "Desaturation")
 
         # TOOLS SUB FRAME WIDGETS
-
+        self.clearConfigPanel()
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 1)
 
         # IMAGE FRAME WIDGETS
