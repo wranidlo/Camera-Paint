@@ -10,6 +10,7 @@ import re
 from camera import Camera
 import brushes.Brushes as Br
 from gui import ConfigManager
+import imutils
 
 current_tool = Br.brush
 current_tool_size = 5
@@ -560,6 +561,11 @@ class Application(tk.Frame):
         self.image_resized()
 
 
+    def rotate(self, degrees):
+        Br.canvas_matrix = imutils.rotate(Br.canvas_matrix, angle=degrees)
+        Br.canvas_matrix_temp = Br.canvas_matrix
+        self.show_image(Br.canvas_matrix_temp)
+
     # EVENTS METHODS
 
     # resizing elements to current widget size after event of changed size
@@ -760,6 +766,10 @@ class Application(tk.Frame):
         self.IMAGE_MENU = tk.Menu(self.MENU, tearoff=0)
         self.MENU.add_cascade(label='Image', menu=self.IMAGE_MENU)
         self.IMAGE_MENU.add_command(label='Size', command=lambda: self.size_image())
+        self.IMAGE_MENU.add_command(label='Rotate 45% to right', command=lambda: self.rotate(45))
+        self.IMAGE_MENU.add_command(label='Rotate 90% to right', command=lambda: self.rotate(90))
+        self.IMAGE_MENU.add_command(label='Rotate 45% to left', command=lambda: self.rotate(-45))
+        self.IMAGE_MENU.add_command(label='Rotate 90% to left', command=lambda: self.rotate(-90))
 
         # tools menu
         self.TOOLS_MENU = tk.Menu(self.MENU, tearoff=0)
@@ -809,7 +819,7 @@ class Application(tk.Frame):
         self.SEPARATOR_BETWEEN_TOOLS_FRAMES_2.grid(row=5, column=0)
 
         # Creating SUB_TOOLS_FRAME_1 label
-        self.SUB_TOOLS_FRAME_1_LABEL = tk.Label(self.TOOLS_FRAME, text="Scanner options", anchor=tk.N)
+        self.SUB_TOOLS_FRAME_1_LABEL = tk.Label(self.TOOLS_FRAME, text="Modes of work", anchor=tk.N)
         self.SUB_TOOLS_FRAME_1_LABEL.grid(row=0, column=0, sticky=tk.W, padx=5)
 
         # Creating SUB_TOOLS_FRAME_2 label
