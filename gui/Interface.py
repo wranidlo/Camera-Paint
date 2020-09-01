@@ -443,22 +443,18 @@ class Application(tk.Frame):
         self.clearConfigPanel()
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 1)
 
-    def change_selection(self, type):
+    def change_shape(self, type):
         if type == 0:
-            self.SELECTION_BUTTON.config(image=self.IMAGES['squaredSelection'])
-            self.SELECTION_BUTTON.image = self.IMAGES['squaredSelection']
+            self.SHAPES_BUTTON.config(image=self.IMAGES['square'])
+            self.SHAPES_BUTTON.image = self.IMAGES['square']
             # TODO connect with BRUSHES
         elif type == 1:
-            self.SELECTION_BUTTON.config(image=self.IMAGES['circleSelection'])
-            self.SELECTION_BUTTON.image = self.IMAGES['circleSelection']
+            self.SHAPES_BUTTON.config(image=self.IMAGES['triangle'])
+            self.SHAPES_BUTTON.image = self.IMAGES['triangle']
             # TODO connect with BRUSHES
         elif type == 2:
-            self.SELECTION_BUTTON.config(image=self.IMAGES['colourSelection'])
-            self.SELECTION_BUTTON.image = self.IMAGES['colourSelection']
-            # TODO connect with BRUSHES
-        elif type == 3:
-            self.SELECTION_BUTTON.config(image=self.IMAGES['wandSelection'])
-            self.SELECTION_BUTTON.image = self.IMAGES['wandSelection']
+            self.SHAPES_BUTTON.config(image=self.IMAGES['circle'])
+            self.SHAPES_BUTTON.image = self.IMAGES['circle']
             # TODO connect with BRUSHES
         self.clearConfigPanel()
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 0)
@@ -687,6 +683,12 @@ class Application(tk.Frame):
         red_colour = tk.PhotoImage(file=r"data/redColour.png")
         plus = tk.PhotoImage(file=r"data/plus.png")
         minus = tk.PhotoImage(file=r"data/minus.png")
+        square = tk.PhotoImage(file=r"data/rectangle.png")
+        triangle = tk.PhotoImage(file=r"data/triangle.png")
+        circle = tk.PhotoImage(file=r"data/circle.png")
+        self.IMAGES['square'] = square
+        self.IMAGES['triangle'] = triangle
+        self.IMAGES['circle'] = circle
         self.IMAGES['brush'] = brush
         self.IMAGES['pencil'] = pencil
         self.IMAGES['spray'] = spray
@@ -936,23 +938,21 @@ class Application(tk.Frame):
         # ToolTip for button
         self.create_tool_tip(self.COLOUR_BUTTON, "Colour")
 
-        self.SELECTION_BUTTON = tk.Menubutton(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['squaredSelection'],
+        self.SHAPES_BUTTON = tk.Menubutton(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['square'],
                                               compound=tk.CENTER, bg="white")
-        self.SELECTION_BUTTON.grid(row=1, column=0, padx=10, pady=5, sticky=tk.N)
+        self.SHAPES_BUTTON.grid(row=1, column=0, padx=10, pady=5, sticky=tk.N)
 
         # Creating selection menu
-        self.SELECTION_BUTTON.menu = tk.Menu(self.SELECTION_BUTTON, tearoff=0)
-        self.SELECTION_BUTTON["menu"] = self.SELECTION_BUTTON.menu
-        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['squaredSelection'],
-                                               command=lambda: self.change_selection(0))
-        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['circleSelection'],
-                                               command=lambda: self.change_selection(1))
-        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['colourSelection'],
-                                               command=lambda: self.change_selection(2))
-        self.SELECTION_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['wandSelection'],
-                                               command=lambda: self.change_selection(3))
+        self.SHAPES_BUTTON.menu = tk.Menu(self.SHAPES_BUTTON, tearoff=0)
+        self.SHAPES_BUTTON["menu"] = self.SHAPES_BUTTON.menu
+        self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['square'],
+                                               command=lambda: self.change_shape(0))
+        self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['triangle'],
+                                               command=lambda: self.change_shape(1))
+        self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['circle'],
+                                               command=lambda: self.change_shape(2))
         # ToolTip for button
-        self.create_tool_tip(self.SELECTION_BUTTON, "Selection")
+        self.create_tool_tip(self.SHAPES_BUTTON, "Shape")
 
         # Creating fill button
         self.FILL_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['fill'], compound=tk.CENTER, bg="white",
@@ -969,27 +969,12 @@ class Application(tk.Frame):
         # ToolTip for button
         self.create_tool_tip(self.PICK_COLOR_BUTTON, "Pick color")
 
-        # Creating zoom button
-        self.ZOOM_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['zoom'], compound=tk.CENTER,
-                                     bg="white",
-                                     command=lambda: self.use_zoom())
-        self.ZOOM_BUTTON.grid(row=2, column=1, padx=0, pady=5, sticky=tk.N)
-        # ToolTip for button
-        self.create_tool_tip(self.ZOOM_BUTTON, "Zoom")
-
         # Creating text button
         self.TEXT_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['text'], compound=tk.CENTER,
                                      bg="white", command=lambda: self.use_text())
-        self.TEXT_BUTTON.grid(row=3, column=0, padx=10, pady=5, sticky=tk.N)
+        self.TEXT_BUTTON.grid(row=2, column=1, padx=10, pady=5, sticky=tk.N)
         # ToolTip for button
         self.create_tool_tip(self.TEXT_BUTTON, "Text")
-
-        # Creating desaturation button
-        self.DESATURATION_BUTTON = tk.Button(self.SUB_TOOLS_FRAME_2, bd=0, image=self.IMAGES['saturation'], compound=tk.CENTER,
-                                     bg="white", command=lambda: self.use_desaturation())
-        self.DESATURATION_BUTTON.grid(row=3, column=1, padx=10, pady=5, sticky=tk.N)
-        # ToolTip for button
-        self.create_tool_tip(self.DESATURATION_BUTTON, "Desaturation")
 
         # TOOLS SUB FRAME WIDGETS
         self.clearConfigPanel()
