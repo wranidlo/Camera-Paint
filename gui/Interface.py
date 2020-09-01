@@ -399,8 +399,22 @@ class Application(tk.Frame):
             y = int(Br.size_y / self.usage.cols) * y
             # print("Center fom image- ", x, y)
             if self.painting_flag:
-                Br.draw(y, x, current_tool, self.current_color)
-                # cv2.circle(Br.canvas_matrix_temp, (x, y), 5, self.current_color, -1)
+                if isinstance(current_tool, int):
+                    if current_tool == 0:
+                        cv2.rectangle(Br.canvas_matrix_temp, (x, y), (x+current_tool_size, y+current_tool_size),
+                                      self.current_color, 2)
+                    else:
+                        if current_tool == 1:
+                            cv2.line(img, (x, y), (x+current_tool_size, y), self.current_color, current_tool_size)
+                            cv2.line(img, (x, y), (x+int(current_tool_size/2), y+current_tool_size), self.current_color,
+                                     current_tool_size)
+                            cv2.line(img, (x+int(current_tool_size/2), y+current_tool_size), (x+current_tool_size, y)
+                                     , self.current_color, current_tool_size)
+                        else:
+                            if current_tool == 2:
+                                cv2.circle(Br.canvas_matrix_temp, (x, y), current_tool_size, self.current_color, -1)
+                else:
+                    Br.draw(y, x, current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()
             cv2.circle(tmp, (x, y), 5, [0, 0, 0], -1)
             self.show_image(tmp)
@@ -446,17 +460,21 @@ class Application(tk.Frame):
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 1)
 
     def change_shape(self, type):
+        global current_tool
         if type == 0:
             self.SHAPES_BUTTON.config(image=self.IMAGES['square'])
             self.SHAPES_BUTTON.image = self.IMAGES['square']
+            current_tool = 0
             # TODO connect with BRUSHES
         elif type == 1:
             self.SHAPES_BUTTON.config(image=self.IMAGES['triangle'])
             self.SHAPES_BUTTON.image = self.IMAGES['triangle']
+            current_tool = 1
             # TODO connect with BRUSHES
         elif type == 2:
             self.SHAPES_BUTTON.config(image=self.IMAGES['circle'])
             self.SHAPES_BUTTON.image = self.IMAGES['circle']
+            current_tool = 2
             # TODO connect with BRUSHES
         self.clearConfigPanel()
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 0)
