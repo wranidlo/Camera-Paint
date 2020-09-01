@@ -13,7 +13,7 @@ from gui import ConfigManager
 import imutils
 
 current_tool = Br.brush
-current_tool_size = 5
+current_tool_size = 3
 current_tool_type = 0
 current_tool_opacity = 1.0
 
@@ -360,6 +360,7 @@ class Application(tk.Frame):
             # print("Center fom image- ", x, y)
             if self.painting_flag:
                 Br.draw(y, x, current_tool, self.current_color)
+                # cv2.circle(Br.canvas_matrix_temp, (x, y), 5, self.current_color, -1)
             tmp = Br.canvas_matrix_temp.copy()
             cv2.circle(tmp, (x, y), 5, [0, 0, 0], -1)
             self.show_image(tmp)
@@ -435,8 +436,13 @@ class Application(tk.Frame):
         # TODO connect with BRUSHES
 
     def use_text(self):
-        None
-        # TODO connect with BRUSHES
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        _, loc = self.usage.get_center()
+        x, y = loc
+        cv2.putText(Br.canvas_matrix, "text", (x, y), font, current_tool_size, self.current_color, 1, cv2.LINE_AA)
+        Br.canvas_matrix_temp = Br.canvas_matrix
+        self.show_image(Br.canvas_matrix_temp)
+
 
     def use_desaturation(self):
         None
