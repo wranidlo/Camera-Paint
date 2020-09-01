@@ -16,6 +16,8 @@ current_tool = Br.brush
 current_tool_size = 3
 current_tool_type = 0
 current_tool_opacity = 1.0
+current_shape_size = 5
+current_shape_opacity = 1.0
 text_to_draw = ""
 
 
@@ -75,9 +77,13 @@ class ToolsConfigPanel(object):
         self.panelNumber = panelNumber
         self.tool_size = tk.IntVar()
         self.tool_opacity = tk.DoubleVar()
+        self.shape_size = tk.IntVar()
+        self.shape_opacity = tk.DoubleVar()
         self.text = tk.StringVar()
         self.minToolSize = 1
         self.maxToolSize = 20
+        self.minShapeSize = 1
+        self.maxShapeSize = 100
         self.minToolOpacity = 0.0
         self.maxToolOpacity = 1.0
         self.vcmd = (root.register(self.digitOnlyTextEntryCallback))
@@ -103,6 +109,11 @@ class ToolsConfigPanel(object):
         global text_to_draw
         print(self.text.get())
         text_to_draw = self.text.get()
+
+    # provides the correct value of the variable
+    def changeShapeParam(self, newSize, newOpacity):
+        None
+        # TODO
 
     # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
@@ -161,6 +172,9 @@ class ToolsConfigPanel(object):
         elif panelNumber == 2:
             self.panelNumber = 2
             self.textPanel()
+        elif panelNumber == 3:
+            self.panelNumber = 3
+            self.shapePanel()
 
     # default empty panel if no tools choosen
     def emptyPanel(self):
@@ -175,7 +189,7 @@ class ToolsConfigPanel(object):
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
         self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
 
-     # panel for painting tools: spray, pencil, brush
+    # panel for painting tools: spray, pencil, brush
     def toolsPanel(self):
         global current_tool
 
@@ -215,6 +229,7 @@ class ToolsConfigPanel(object):
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
         self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
 
+    # panel for text tool
     def textPanel(self):
         global current_tool
 
@@ -243,6 +258,51 @@ class ToolsConfigPanel(object):
         self.text_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.text)
         self.text_entry.grid(row=3, column=0)
         self.text_entry.bind('<Return>', self.changeTextParam)
+        # empty space
+        self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
+        self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
+
+    # panel for shape tool
+    def shapePanel(self):
+        global current_shape_size
+        global current_shape_opacity
+
+        # size config widgets
+        self.size_label = tk.Label(self.frame, bd=0, text="Size", bg="white")
+        self.size_label.grid(row=0, column=0, padx=5, pady=1, sticky=tk.N)
+        self.size_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.shape_size,
+                                    validatecommand=(self.vcmd, '%P'))
+        self.size_entry.grid(row=1, column=0)
+        self.size_entry.bind('<Return>', lambda: self.changeShapeParam(self.shape_size.get(), current_shape_opacity))
+        print("Current size: ", current_shape_size)
+        self.shape_size.set(current_shape_size)
+        self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
+                                              command=lambda: self.changeShapeParam(current_shape_size - 1,
+                                                                                   current_shape_opacity))
+        self.size_decrease_button.grid(row=1, column=1, padx=5, pady=1, sticky=tk.N)
+        self.size_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
+                                              command=lambda: self.changeShapeParam(current_shape_size + 1,
+                                                                                   current_shape_opacity))
+        self.size_increase_button.grid(row=1, column=2, padx=5, pady=1, sticky=tk.N)
+
+        # opacity config widgets
+        self.opacity_label = tk.Label(self.frame, bd=0, text="Opacity", bg="white")
+        self.opacity_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
+        self.opacity_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.shape_opacity,
+                                       validatecommand=(self.vcmd2, '%P'))
+        self.opacity_entry.grid(row=3, column=0)
+        self.opacity_entry.bind('<Return>', lambda: self.changeShapeParam(current_shape_size, self.shape_opacity.get()))
+        print("Current opacity: ", current_shape_opacity)
+        self.shape_opacity.set(current_shape_opacity)
+        self.opacity_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
+                                                 command=lambda: self.changeShapeParam(current_shape_size,
+                                                                                      current_shape_opacity - 0.1))
+        self.opacity_decrease_button.grid(row=3, column=1, padx=5, pady=1, sticky=tk.N)
+        self.opacity_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
+                                                 command=lambda: self.changeShapeParam(current_shape_size,
+                                                                                      current_shape_opacity + 0.1))
+        self.opacity_increase_button.grid(row=3, column=2, padx=5, pady=1, sticky=tk.N)
+
         # empty space
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
         self.TEMP_LABEL_4.grid(row=4, column=0, padx=5, pady=5, sticky=tk.N)
@@ -477,7 +537,7 @@ class Application(tk.Frame):
             current_tool = 2
             # TODO connect with BRUSHES
         self.clearConfigPanel()
-        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 0)
+        self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 3)
 
     def use_fill(self):
         _, x_y = self.usage.get_center()
