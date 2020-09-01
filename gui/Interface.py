@@ -442,6 +442,7 @@ class Application(tk.Frame):
         cv2.putText(Br.canvas_matrix, "text", (x, y), font, current_tool_size, self.current_color, 1, cv2.LINE_AA)
         Br.canvas_matrix_temp = Br.canvas_matrix
         self.show_image(Br.canvas_matrix_temp)
+        Br.save_step()
 
 
     def use_desaturation(self):
@@ -571,6 +572,7 @@ class Application(tk.Frame):
         Br.canvas_matrix = imutils.rotate(Br.canvas_matrix, angle=degrees)
         Br.canvas_matrix_temp = Br.canvas_matrix
         self.show_image(Br.canvas_matrix_temp)
+        Br.save_step()
 
     # EVENTS METHODS
 
