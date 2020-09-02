@@ -481,17 +481,23 @@ class Application(tk.Frame):
                 if isinstance(current_tool, int):
                     if current_tool == 0:
                         cv2.rectangle(Br.canvas_matrix_temp, (x, y), (x+current_shape_size, y+current_shape_size),
-                                      self.current_color, 2)
+                                      self.current_color, current_shape_thickness)
                         self.painting_flag = False
+                        Br.save_step()
+                        Br.canvas_matrix_temp = Br.canvas_matrix
                     else:
                         if current_tool == 1:
                             cv2.circle(Br.canvas_matrix_temp, (x, y), current_shape_size, self.current_color, -1)
                             self.painting_flag = False
+                            Br.save_step()
+                            Br.canvas_matrix_temp = Br.canvas_matrix
                         else:
                             if current_tool == 2:
                                 cv2.circle(Br.canvas_matrix_temp, (x, y), current_shape_size, self.current_color,
                                            current_shape_thickness)
                                 self.painting_flag = False
+                                Br.save_step()
+                                Br.canvas_matrix_temp = Br.canvas_matrix
                 else:
                     Br.draw(y, x, current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()

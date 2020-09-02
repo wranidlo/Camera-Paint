@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import math
 
+
 # when started put object to track into smaller rectangle and press space
 # to end press ESC
 
@@ -45,7 +46,7 @@ class camera:
         _, frame = self.cap.read()
         self.rows, self.cols, _ = frame.shape
         print(self.rows, self.cols)
-        self.last_center = (int(self.rows/2), int(self.cols/2))
+        self.last_center = (int(self.rows / 2), int(self.cols / 2))
 
     def draw_place(self, frame):
         rows, cols, _ = frame.shape
@@ -65,6 +66,7 @@ class camera:
         histogram = cv2.calcHist([hsv_frame], [0, 1], None, [150, 256], [0, 150, 0, 256])
 
         return cv2.normalize(histogram, histogram, 0, 255, cv2.NORM_MINMAX), hsv_frame
+
     """
     def capture(self):
         cap = cv2.VideoCapture(0)
@@ -119,7 +121,6 @@ class camera:
                 frame = self.draw_place(frame)
 
             cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
-            cv2.window
 
             if cv2.waitKey(1) & 0xFF == 32:
                 self.histogram_created_check = True
@@ -149,7 +150,7 @@ class camera:
             self.histogram_created_check = True
             self.histogram, _ = self.create_histogram(frame)
         return frame
-    
+
     def set_histogram_created_check_not(self):
         self.histogram_created_check = False
 
@@ -167,8 +168,8 @@ class camera:
             try:
                 max_cont = max(contour_list, key=cv2.contourArea)
                 cnt_centroid = calculate_center(max_cont)
-                if math.sqrt((self.last_center[0] - cnt_centroid[0])**2 +
-                             (self.last_center[1] - cnt_centroid[1])**2) > 100:
+                if math.sqrt((self.last_center[0] - cnt_centroid[0]) ** 2 +
+                             (self.last_center[1] - cnt_centroid[1]) ** 2) > 100:
                     cnt_centroid = self.last_center
                 else:
                     self.last_center = cnt_centroid
