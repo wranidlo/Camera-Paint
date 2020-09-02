@@ -7,17 +7,17 @@ import math
 
 
 def masking_histogram(frame, histogram):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    dst = cv2.calcBackProject([hsv], [0, 1], histogram, [0, 180, 0, 256], 1)
-    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (21, 21))
-    cv2.filter2D(dst, -1, disc, dst)
-    ret, thresh = cv2.threshold(dst, 200, 255, cv2.THRESH_BINARY)
+    frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (19, 19))
+    struct_element = cv2.calcBackProject([frame_hsv], [0, 1], histogram, [0, 150, 0, 256], 1)
+    cv2.filter2D(struct_element, -1, disc, struct_element)
+    _, thresh = cv2.threshold(struct_element, 150, 255, cv2.THRESH_BINARY)
     thresh = cv2.merge((thresh, thresh, thresh))
     return cv2.bitwise_and(frame, thresh)
 
 
-def centroid(max_contours):
-    moment = cv2.moments(max_contours)
+def calculate_center(best_contours):
+    moment = cv2.moments(best_contours)
     if moment['m00'] != 0:
         x_dimension, y_dimension = (int(moment['m10'] / moment['m00']), int(moment['m01'] / moment['m00']))
         return x_dimension, y_dimension
@@ -25,9 +25,9 @@ def centroid(max_contours):
         return None
 
 
-def contours(histogram_mask):
-    gray_hist_mask_image = cv2.cvtColor(histogram_mask, cv2.COLOR_BGR2GRAY)
-    _, thresh = cv2.threshold(gray_hist_mask_image, 0, 255, 0)
+def calculate_contours(histogram_mask):
+    histogram_gray = cv2.cvtColor(histogram_mask, cv2.COLOR_BGR2GRAY)
+    _, thresh = cv2.threshold(histogram_gray, 0, 255, 0)
     contour, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     return contour
 
@@ -62,7 +62,7 @@ class camera:
         hsv_frame = hsv_frame[self.first_place[0][1]: self.first_place[1][1],
                     self.first_place[0][0]: self.first_place[1][0]]
 
-        histogram = cv2.calcHist([hsv_frame], [0, 1], None, [180, 256], [0, 180, 0, 256])
+        histogram = cv2.calcHist([hsv_frame], [0, 1], None, [150, 256], [0, 150, 0, 256])
 
         return cv2.normalize(histogram, histogram, 0, 255, cv2.NORM_MINMAX), hsv_frame
     """
@@ -163,10 +163,10 @@ class camera:
             kernel = np.ones((5, 5), np.uint8)
             hist_masked_image = cv2.erode(hist_masked_image, kernel)
             hist_masked_image = cv2.dilate(hist_masked_image, kernel)
-            contour_list = contours(hist_masked_image)
+            contour_list = calculate_contours(hist_masked_image)
             try:
                 max_cont = max(contour_list, key=cv2.contourArea)
-                cnt_centroid = centroid(max_cont)
+                cnt_centroid = calculate_center(max_cont)
                 if math.sqrt((self.last_center[0] - cnt_centroid[0])**2 +
                              (self.last_center[1] - cnt_centroid[1])**2) > 100:
                     cnt_centroid = self.last_center
@@ -187,7 +187,7 @@ class camera:
         dilate_kernel = np.ones((5, 5), np.uint8)
         hist_masked_image = cv2.erode(hist_masked_image, erode_kernel)
         hist_masked_image = cv2.dilate(hist_masked_image, dilate_kernel)
-        contour_list = contours(hist_masked_image)
+        contour_list = calculate_contours(hist_masked_image)
         return len(contour_list)
 
 

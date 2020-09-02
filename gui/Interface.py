@@ -17,7 +17,7 @@ current_tool_size = 3
 current_tool_type = 0
 current_tool_opacity = 1.0
 current_shape_size = 10
-current_shape_opacity = 1.0
+current_shape_thickness = 2
 text_to_draw = ""
 
 
@@ -78,7 +78,7 @@ class ToolsConfigPanel(object):
         self.tool_size = tk.IntVar()
         self.tool_opacity = tk.DoubleVar()
         self.shape_size = tk.IntVar()
-        self.shape_opacity = tk.DoubleVar()
+        self.shape_thickness = tk.IntVar()
         self.text = tk.StringVar()
         self.minToolSize = 1
         self.maxToolSize = 20
@@ -86,6 +86,8 @@ class ToolsConfigPanel(object):
         self.maxShapeSize = 100
         self.minToolOpacity = 0.0
         self.maxToolOpacity = 1.0
+        self.maxShapeThickness = 20
+        self.minShapeThickness = 1
         self.vcmd = (root.register(self.digitOnlyTextEntryCallback))
         self.vcmd2 = (root.register(self.digitdotOnlyTextEntryCallback))
         self.changePanel(self.panelNumber)
@@ -111,18 +113,28 @@ class ToolsConfigPanel(object):
         text_to_draw = self.text.get()
 
     # provides the correct value of the variable
-    def changeShapeParam(self, newSize, newOpacity):
-        global current_shape_size, current_shape_opacity
+    def changeShapeParam(self, newSize, newThickness):
+        global current_shape_size, current_shape_thickness
 
-        if newSize >= self.minShapeSize and newSize <= self.maxShapeSize:
+        if self.minShapeSize <= newSize <= self.maxShapeSize:
             self.shape_size.set(newSize)
             current_shape_size = newSize
         elif newSize < self.minShapeSize:
-            self.shape_size.set(minShapeSize)
+            self.shape_size.set(self.minShapeSize)
             current_shape_size = self.minShapeSize
         elif newSize > self.maxShapeSize:
             self.shape_size.set(self.maxShapeSize)
             current_shape_size = self.maxShapeSize
+
+        if self.minShapeThickness <= newThickness <= self.maxShapeThickness:
+            self.shape_thickness.set(newThickness)
+            current_shape_thickness = newThickness
+        elif newThickness < self.minShapeThickness:
+            self.shape_thickness.set(self.minShapeThickness)
+            current_shape_thickness = self.minShapeThickness
+        elif newThickness > self.maxShapeThickness:
+            self.shape_thickness.set(self.maxShapeThickness)
+            current_shape_thickness = self.maxShapeThickness
 
     # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
@@ -280,35 +292,35 @@ class ToolsConfigPanel(object):
         self.size_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.shape_size,
                                     validatecommand=(self.vcmd, '%P'))
         self.size_entry.grid(row=1, column=0)
-        self.size_entry.bind('<Return>', lambda: self.changeShapeParam(self.shape_size.get(), current_shape_opacity))
+        self.size_entry.bind('<Return>', lambda: self.changeShapeParam(self.shape_size.get(), current_shape_thickness))
         print("Current size: ", current_shape_size)
         self.shape_size.set(current_shape_size)
         self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                               command=lambda: self.changeShapeParam(current_shape_size - 1,
-                                                                                   current_shape_opacity))
+                                                                                    current_shape_thickness))
         self.size_decrease_button.grid(row=1, column=1, padx=5, pady=1, sticky=tk.N)
         self.size_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
                                               command=lambda: self.changeShapeParam(current_shape_size + 1,
-                                                                                   current_shape_opacity))
+                                                                                    current_shape_thickness))
         self.size_increase_button.grid(row=1, column=2, padx=5, pady=1, sticky=tk.N)
 
-        # opacity config widgets
-        self.opacity_label = tk.Label(self.frame, bd=0, text="Opacity", bg="white")
-        self.opacity_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
-        self.opacity_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.shape_opacity,
-                                       validatecommand=(self.vcmd2, '%P'))
-        self.opacity_entry.grid(row=3, column=0)
-        self.opacity_entry.bind('<Return>', lambda: self.changeShapeParam(current_shape_size, self.shape_opacity.get()))
-        print("Current opacity: ", current_shape_opacity)
-        self.shape_opacity.set(current_shape_opacity)
-        self.opacity_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
+        # thickness config widgets
+        self.thickness_label = tk.Label(self.frame, bd=0, text="Thickness", bg="white")
+        self.thickness_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
+        self.thickness_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.shape_thickness,
+                                         validatecommand=(self.vcmd2, '%P'))
+        self.thickness_entry.grid(row=3, column=0)
+        self.thickness_entry.bind('<Return>', lambda: self.changeShapeParam(current_shape_size, self.shape_thickness.get()))
+        print("Current thickness: ", current_shape_thickness)
+        self.shape_thickness.set(current_shape_thickness)
+        self.thickness_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                                  command=lambda: self.changeShapeParam(current_shape_size,
-                                                                                      current_shape_opacity - 0.1))
-        self.opacity_decrease_button.grid(row=3, column=1, padx=5, pady=1, sticky=tk.N)
-        self.opacity_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
+                                                                                       current_shape_thickness - 1))
+        self.thickness_decrease_button.grid(row=3, column=1, padx=5, pady=1, sticky=tk.N)
+        self.thickness_increase_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['plus'],
                                                  command=lambda: self.changeShapeParam(current_shape_size,
-                                                                                      current_shape_opacity + 0.1))
-        self.opacity_increase_button.grid(row=3, column=2, padx=5, pady=1, sticky=tk.N)
+                                                                                       current_shape_thickness + 1))
+        self.thickness_increase_button.grid(row=3, column=2, padx=5, pady=1, sticky=tk.N)
 
         # empty space
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
@@ -477,7 +489,8 @@ class Application(tk.Frame):
                             self.painting_flag = False
                         else:
                             if current_tool == 2:
-                                cv2.circle(Br.canvas_matrix_temp, (x, y), current_shape_size, self.current_color, 2)
+                                cv2.circle(Br.canvas_matrix_temp, (x, y), current_shape_size, self.current_color,
+                                           current_shape_thickness)
                                 self.painting_flag = False
                 else:
                     Br.draw(y, x, current_tool, self.current_color)
