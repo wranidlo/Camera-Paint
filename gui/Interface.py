@@ -16,7 +16,7 @@ current_tool = Br.brush
 current_tool_size = 3
 current_tool_type = 0
 current_tool_opacity = 1.0
-current_shape_size = 5
+current_shape_size = 10
 current_shape_opacity = 1.0
 text_to_draw = ""
 
@@ -112,8 +112,17 @@ class ToolsConfigPanel(object):
 
     # provides the correct value of the variable
     def changeShapeParam(self, newSize, newOpacity):
-        None
-        # TODO
+        global current_shape_size, current_shape_opacity
+
+        if newSize >= self.minShapeSize and newSize <= self.maxShapeSize:
+            self.shape_size.set(newSize)
+            current_shape_size = newSize
+        elif newSize < self.minShapeSize:
+            self.shape_size.set(minShapeSize)
+            current_shape_size = self.minShapeSize
+        elif newSize > self.maxShapeSize:
+            self.shape_size.set(self.maxShapeSize)
+            current_shape_size = self.maxShapeSize
 
     # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
@@ -264,8 +273,6 @@ class ToolsConfigPanel(object):
 
     # panel for shape tool
     def shapePanel(self):
-        global current_shape_size
-        global current_shape_opacity
 
         # size config widgets
         self.size_label = tk.Label(self.frame, bd=0, text="Size", bg="white")
@@ -461,18 +468,17 @@ class Application(tk.Frame):
             if self.painting_flag:
                 if isinstance(current_tool, int):
                     if current_tool == 0:
-                        cv2.rectangle(Br.canvas_matrix_temp, (x, y), (x+current_tool_size, y+current_tool_size),
+                        cv2.rectangle(Br.canvas_matrix_temp, (x, y), (x+current_shape_size, y+current_shape_size),
                                       self.current_color, 2)
+                        self.painting_flag = False
                     else:
                         if current_tool == 1:
-                            cv2.line(img, (x, y), (x+current_tool_size, y), self.current_color, current_tool_size)
-                            cv2.line(img, (x, y), (x+int(current_tool_size/2), y+current_tool_size), self.current_color,
-                                     current_tool_size)
-                            cv2.line(img, (x+int(current_tool_size/2), y+current_tool_size), (x+current_tool_size, y)
-                                     , self.current_color, current_tool_size)
+                            cv2.circle(Br.canvas_matrix_temp, (x, y), current_shape_size, self.current_color, -1)
+                            self.painting_flag = False
                         else:
                             if current_tool == 2:
-                                cv2.circle(Br.canvas_matrix_temp, (x, y), current_tool_size, self.current_color, -1)
+                                cv2.circle(Br.canvas_matrix_temp, (x, y), current_shape_size, self.current_color, 2)
+                                self.painting_flag = False
                 else:
                     Br.draw(y, x, current_tool, self.current_color)
             tmp = Br.canvas_matrix_temp.copy()
@@ -525,17 +531,14 @@ class Application(tk.Frame):
             self.SHAPES_BUTTON.config(image=self.IMAGES['square'])
             self.SHAPES_BUTTON.image = self.IMAGES['square']
             current_tool = 0
-            # TODO connect with BRUSHES
         elif type == 1:
-            self.SHAPES_BUTTON.config(image=self.IMAGES['triangle'])
-            self.SHAPES_BUTTON.image = self.IMAGES['triangle']
+            self.SHAPES_BUTTON.config(image=self.IMAGES['filled_circle'])
+            self.SHAPES_BUTTON.image = self.IMAGES['filled_circle']
             current_tool = 1
-            # TODO connect with BRUSHES
         elif type == 2:
             self.SHAPES_BUTTON.config(image=self.IMAGES['circle'])
             self.SHAPES_BUTTON.image = self.IMAGES['circle']
             current_tool = 2
-            # TODO connect with BRUSHES
         self.clearConfigPanel()
         self.toolsConfigPanel = ToolsConfigPanel(root, self.SUB_TOOLS_FRAME_3, self.IMAGES, 3)
 
@@ -767,10 +770,10 @@ class Application(tk.Frame):
         plus = tk.PhotoImage(file=r"data/plus.png")
         minus = tk.PhotoImage(file=r"data/minus.png")
         square = tk.PhotoImage(file=r"data/rectangle.png")
-        triangle = tk.PhotoImage(file=r"data/triangle.png")
+        filled_circle = tk.PhotoImage(file=r"data/filled_circle.png")
         circle = tk.PhotoImage(file=r"data/circle.png")
         self.IMAGES['square'] = square
-        self.IMAGES['triangle'] = triangle
+        self.IMAGES['filled_circle'] = filled_circle
         self.IMAGES['circle'] = circle
         self.IMAGES['brush'] = brush
         self.IMAGES['pencil'] = pencil
@@ -1030,7 +1033,7 @@ class Application(tk.Frame):
         self.SHAPES_BUTTON["menu"] = self.SHAPES_BUTTON.menu
         self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['square'],
                                                command=lambda: self.change_shape(0))
-        self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['triangle'],
+        self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['filled_circle'],
                                                command=lambda: self.change_shape(1))
         self.SHAPES_BUTTON.menu.add_command(label='', underline=0, image=self.IMAGES['circle'],
                                                command=lambda: self.change_shape(2))

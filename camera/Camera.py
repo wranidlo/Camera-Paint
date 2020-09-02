@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import math
 
 # when started put object to track into smaller rectangle and press space
 # to end press ESC
@@ -44,7 +45,7 @@ class camera:
         _, frame = self.cap.read()
         self.rows, self.cols, _ = frame.shape
         print(self.rows, self.cols)
-        self.last_max_contour = None
+        self.last_center = (int(self.rows/2), int(self.cols/2))
 
     def draw_place(self, frame):
         rows, cols, _ = frame.shape
@@ -165,11 +166,15 @@ class camera:
             contour_list = contours(hist_masked_image)
             try:
                 max_cont = max(contour_list, key=cv2.contourArea)
-                self.last_max_contour = max_cont
+                cnt_centroid = centroid(max_cont)
+                if math.sqrt((self.last_center[0] - cnt_centroid[0])**2 +
+                             (self.last_center[1] - cnt_centroid[1])**2) > 100:
+                    cnt_centroid = self.last_center
+                else:
+                    self.last_center = cnt_centroid
             except ValueError:
                 # print("out")
-                max_cont = self.last_max_contour
-            cnt_centroid = centroid(max_cont)
+                cnt_centroid = self.last_center
             cv2.circle(frame, cnt_centroid, 5, [255, 0, 255], -1)
         else:
             frame = self.draw_place(frame)
