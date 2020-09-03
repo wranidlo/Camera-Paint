@@ -276,8 +276,8 @@ class ToolsConfigPanel(object):
         self.text_label = tk.Label(self.frame, bd=0, text="Text", bg="white")
         self.text_label.grid(row=2, column=0, padx=5, pady=1, sticky=tk.N)
         global text_to_draw
-        self.text_entry = ttk.Entry(self.frame, width=4, validate='all', textvariable=self.text)
-        self.text_entry.grid(row=3, column=0)
+        self.text_entry = ttk.Entry(self.frame, width=13, validate='all', textvariable=self.text)
+        self.text_entry.grid(row=3, column=0, columnspan=3)
         self.text_entry.bind('<Return>', self.changeTextParam)
         # empty space
         self.TEMP_LABEL_4 = tk.Label(self.frame, bd=0, text="", bg="white", compound=tk.CENTER)
@@ -934,17 +934,6 @@ class Application(tk.Frame):
         self.IMAGE_MENU.add_command(label='Rotate 90% to right', command=lambda: self.rotate(90))
         self.IMAGE_MENU.add_command(label='Rotate 45% to left', command=lambda: self.rotate(-45))
         self.IMAGE_MENU.add_command(label='Rotate 90% to left', command=lambda: self.rotate(-90))
-
-        # tools menu
-        self.TOOLS_MENU = tk.Menu(self.MENU, tearoff=0)
-        self.MENU.add_cascade(label='Tools', menu=self.TOOLS_MENU)
-        self.TOOLS_MENU.add_command(label='Tool')
-        self.TOOLS_MENU.add_command(label='Color')
-        self.TOOLS_MENU.add_command(label='Selection')
-        self.TOOLS_MENU.add_command(label='Fill')
-        self.TOOLS_MENU.add_command(label='Pick color')
-        self.TOOLS_MENU.add_command(label='Zoom')
-        self.TOOLS_MENU.add_command(label='Text')
 
         # FRAMES
 
