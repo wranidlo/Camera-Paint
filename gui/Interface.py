@@ -11,6 +11,7 @@ from camera import Camera
 import brushes.Brushes as Br
 from gui import ConfigManager
 import imutils
+import os
 
 current_tool = Br.brush
 current_tool_size = 3
@@ -686,21 +687,23 @@ class Application(tk.Frame):
     def full_screen(self):
         if self.fullScreenStateFlag:
             self.fullScreenStateFlag = False
-            self.VIEW_MENU.entryconfigure(1, label="Fullscreen")
+            self.VIEW_MENU.entryconfigure(0, label="Fullscreen")
         else:
             self.fullScreenStateFlag = True
-            self.VIEW_MENU.entryconfigure(1, label="Exit fullscreen")
+            self.VIEW_MENU.entryconfigure(0, label="Exit fullscreen")
         self.parent.attributes("-fullscreen", self.fullScreenStateFlag)
+        self.config.change_options(self.fullScreenStateFlag, self.blockWindowSizeFlag)
 
     def block_resize(self):
-        if self.blockWindowSizeFlaf:
-            self.blockWindowSizeFlaf = False
+        if self.blockWindowSizeFlag:
+            self.blockWindowSizeFlag = False
             self.parent.resizable(width=True, height=True)
-            self.VIEW_MENU.entryconfigure(2, label="Block window size")
+            self.VIEW_MENU.entryconfigure(1, label="Block window size")
         else:
-            self.blockWindowSizeFlaf = True
+            self.blockWindowSizeFlag = True
             self.parent.resizable(width=False, height=False)
-            self.VIEW_MENU.entryconfigure(2, label="Unblock window size")
+            self.VIEW_MENU.entryconfigure(1, label="Unblock window size")
+        self.config.change_options(self.fullScreenStateFlag, self.blockWindowSizeFlag)
 
 
     # IMAGE MENU METHODS
@@ -925,6 +928,10 @@ class Application(tk.Frame):
         self.MENU.add_cascade(label='View', menu=self.VIEW_MENU)
         self.VIEW_MENU.add_command(label='Fullscreen', command=lambda: self.full_screen())
         self.VIEW_MENU.add_command(label='Block window size', command=lambda: self.block_resize())
+        if self.fullScreenStateFlag == True:
+            self.VIEW_MENU.entryconfigure(0, label="Exit fullscreen")
+        if self.blockWindowSizeFlag == True:
+            self.VIEW_MENU.entryconfigure(1, label="Unblock window size")
 
         # image menu
         self.IMAGE_MENU = tk.Menu(self.MENU, tearoff=0)
@@ -1109,8 +1116,13 @@ class Application(tk.Frame):
         self.OBJECT_TO_DISPLAY_IMAGE = Image.fromarray(Br.canvas_matrix_temp)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.path_to_save = ""
-        self.config = ConfigManager.ConfigManager("config.ini")
-        # self.config.write_default()
+        if os.path.isfile('./config.ini'):
+            print('EXIST')
+            self.config = ConfigManager.ConfigManager("config.ini")
+        else:
+            print('NOT EXIST')
+            self.config = ConfigManager.ConfigManager("config.ini")
+            self.config.write_default()
         self.config.read()
         self.IMAGES = {}
         # self.current_tool = Br.brush
@@ -1121,10 +1133,10 @@ class Application(tk.Frame):
         self.check_if_showing_painting = False
         self.check_if_showing_point = False
         self.check_if_scanning = False
-        self.fullScreenStateFlag = False
+        self.fullScreenStateFlag = self.config.get_fullscreen()
         self.savedFlag = True
         self.painting_flag = False
-        self.blockWindowSizeFlaf = False
+        self.blockWindowSizeFlag = self.config.get_blocksize()
         # GLOBAL EVENTS
         self.parent.bind("<space>", self.painting_activator)
         # self.parent.bind("<Configure>", self.windows_resized)
@@ -1138,6 +1150,8 @@ class Application(tk.Frame):
         self.parent.title("Camera Paint")
         self.parent.geometry('1280x720')
         self.parent.resizable(width=True, height=True)
+        if self.blockWindowSizeFlag == True:
+            self.parent.resizable(width=False, height=False)
         self.grid(sticky=tk.NSEW)
         self.initialize_images()
         self.create_widgets()

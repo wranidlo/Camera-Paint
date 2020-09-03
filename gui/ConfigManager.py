@@ -5,6 +5,7 @@ class ConfigManager(object):
         self.config = configparser.ConfigParser()
         self.file_name = file_name
 
+    # display in console ini file content
     def display_config(self):
         print("Config:")
         for section in self.config.sections():
@@ -12,19 +13,54 @@ class ConfigManager(object):
             for options in self.config.options(section):
                 print("%s\t%s\t%s"% (options, self.config.get(section, options), str(type(options))))
 
+    # write to ini file
     def write(self):
         with open(self.file_name, 'w') as configfile:
             self.config.write(configfile)
 
+    # read from ini file
     def read(self):
         self.config = configparser.ConfigParser()
         self.config.read('config.ini')
 
+    # write to file default values
     def write_default(self):
         self.config['RECENT_IMAGES'] = {"first": "none", "second": "none", "third": "none", "fourth": "none", "fifth": "none"}
+        self.config['OPTIONS'] = {'fullScreen': 'False', 'blockWindowSize': 'False'}
         with open(self.file_name, 'w') as configfile:
             self.config.write(configfile)
 
+    # methods to get current options, first read file!
+    def get_fullscreen(self):
+        if self.config.has_option('OPTIONS', 'fullScreen') :
+            val = self.config.get('OPTIONS', 'fullScreen')
+            if val == 'False':
+                return False
+            else:
+                return True
+
+    def get_blocksize(self):
+        if self.config.has_option('OPTIONS', 'blockWindowSize'):
+            val = self.config.get('OPTIONS', 'blockWindowSize')
+            if val == 'False':
+                return False
+            else:
+                return True
+
+    # methods for writing content
+    # OPTIONS section
+    def change_options(self, fullscreen, block_size):
+        if fullscreen:
+            self.config['OPTIONS']['fullScreen'] = 'True'
+        else:
+            self.config['OPTIONS']['fullScreen'] = 'False'
+        if block_size:
+            self.config['OPTIONS']['blockWindowSize'] = 'True'
+        else:
+            self.config['OPTIONS']['blockWindowSize'] = 'False'
+        self.write()
+
+    # RECENT_IMAGES section
     def add_recent(self, new_path):
         # how many shifts will be done
         step = 4
