@@ -110,7 +110,6 @@ class ToolsConfigPanel(object):
     # provides the correct value of the variable
     def changeTextParam(self, event):
         global text_to_draw
-        print(self.text.get())
         text_to_draw = self.text.get()
 
     # provides the correct value of the variable
@@ -139,7 +138,6 @@ class ToolsConfigPanel(object):
 
     # provides the correct value of the variable
     def changeToolParam(self, newSize, newOpacity):
-        print("new size: ", newSize, " new opacity: ", newOpacity)
         global current_tool
         global current_tool_size
         global current_tool_type
@@ -181,7 +179,6 @@ class ToolsConfigPanel(object):
             Br.b_spray = Br.Brush(Br.influence_spray, current_tool_size, 1, 0, current_tool_opacity)
             Br.spray = Br.b_spray.get_transformed_brush()
             current_tool = Br.spray
-        # self.size_entry.config(takefocus=0)
 
     # change current panel
     def changePanel(self, panelNumber):
@@ -222,7 +219,6 @@ class ToolsConfigPanel(object):
                                     validatecommand=(self.vcmd, '%P'))
         self.size_entry.grid(row=1, column=0)
         self.size_entry.bind('<Return>', lambda: self.changeToolParam(self.tool_size.get(), current_tool_opacity))
-        print("Current size: ", current_tool_size)
         self.tool_size.set(current_tool_size)
         self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                               command=lambda: self.changeToolParam(current_tool_size - 1, current_tool_opacity))
@@ -238,7 +234,6 @@ class ToolsConfigPanel(object):
                                     validatecommand=(self.vcmd2, '%P'))
         self.opacity_entry.grid(row=3, column=0)
         self.opacity_entry.bind('<Return>', lambda: self.changeToolParam(current_tool_size, self.tool_opacity.get()))
-        print("Current opacity: ", current_tool_opacity)
         self.tool_opacity.set(current_tool_opacity)
         self.opacity_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                               command=lambda: self.changeToolParam(current_tool_size, current_tool_opacity - 0.1))
@@ -262,7 +257,6 @@ class ToolsConfigPanel(object):
                                     validatecommand=(self.vcmd, '%P'))
         self.size_entry.grid(row=1, column=0)
         self.size_entry.bind('<Return>', lambda: self.changeToolParam(self.tool_size.get(), current_tool_opacity))
-        print("Current size: ", current_tool_size)
         self.tool_size.set(current_tool_size)
         self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                               command=lambda: self.changeToolParam(current_tool_size - 1,
@@ -294,7 +288,6 @@ class ToolsConfigPanel(object):
                                     validatecommand=(self.vcmd, '%P'))
         self.size_entry.grid(row=1, column=0)
         self.size_entry.bind('<Return>', lambda: self.changeShapeParam(self.shape_size.get(), current_shape_thickness))
-        print("Current size: ", current_shape_size)
         self.shape_size.set(current_shape_size)
         self.size_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                               command=lambda: self.changeShapeParam(current_shape_size - 1,
@@ -312,7 +305,6 @@ class ToolsConfigPanel(object):
                                          validatecommand=(self.vcmd2, '%P'))
         self.thickness_entry.grid(row=3, column=0)
         self.thickness_entry.bind('<Return>', lambda: self.changeShapeParam(current_shape_size, self.shape_thickness.get()))
-        print("Current thickness: ", current_shape_thickness)
         self.shape_thickness.set(current_shape_thickness)
         self.thickness_decrease_button = tk.Button(self.frame, bd=0, bg="white", underline=0, image=self.images['minus'],
                                                  command=lambda: self.changeShapeParam(current_shape_size,
@@ -474,10 +466,8 @@ class Application(tk.Frame):
         if self.check_if_showing_painting:
             img, loc = self.usage.get_center()
             x, y = loc
-            # print("Center fom camera - ", x, y)
             x = int(Br.size_x / self.usage.rows) * x
             y = int(Br.size_y / self.usage.cols) * y
-            # print("Center fom image- ", x, y)
             if self.painting_flag:
                 if isinstance(current_tool, int):
                     if current_tool == 0:
@@ -510,7 +500,6 @@ class Application(tk.Frame):
     def show_image(self, image):
         self.refresh_image(image)
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
-        # self.resize_in_canvas(self.display)
 
     # opening color_chooser window
     def color_chooser(self):
@@ -570,10 +559,6 @@ class Application(tk.Frame):
         _, x_y = self.usage.get_center()
         self.current_color = Br.canvas_matrix[x_y[1]][x_y[0]]
 
-    def use_zoom(self):
-        None
-        # TODO connect with BRUSHES
-
     def use_text(self):
         global text_to_draw
         if len(text_to_draw) == 0:
@@ -588,11 +573,6 @@ class Application(tk.Frame):
             self.show_image(Br.canvas_matrix_temp)
             Br.save_step()
 
-
-    def use_desaturation(self):
-        None
-        # TODO connect with BRUSHES
-
     # FILE MENU METHODS
     def new_project(self):
         Br.clean_canvas()
@@ -603,7 +583,6 @@ class Application(tk.Frame):
             self.show_image(Br.canvas_matrix_temp)
         else:
             response = self.open_messagebox(6, "Not saved changes", "You want to continue without saving?")
-            print(response)
             if response:
                 self.savedFlag = True
                 self.new_project()
@@ -615,12 +594,10 @@ class Application(tk.Frame):
                                                                 ("BMP", "*.bmp")],
                                             defaultextension="*.png")  # wywołanie okna dialogowego save file
             if self.path_to_save != "":
-                # loaded_image = cv2.imread(self.path_to_save)
                 self.config.add_recent(self.path_to_save)
                 self.reload_recent_menu()
                 self.OBJECT_TO_DISPLAY_IMAGE = Image.open(self.path_to_save)
                 self.OBJECT_TO_DISPLAY_IMAGE.load()
-                # Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
                 Br.load(np.array(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
                 self.show_image(Br.canvas_matrix_temp)
         else:
@@ -632,7 +609,6 @@ class Application(tk.Frame):
     def quick_open_project(self, path):
         self.OBJECT_TO_DISPLAY_IMAGE = Image.open(path)
         self.OBJECT_TO_DISPLAY_IMAGE.load()
-        # Br.canvas_matrix = np.asarray(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8")
         Br.load(np.array(self.OBJECT_TO_DISPLAY_IMAGE, dtype="uint8"))
         self.path_to_save = path
         self.config.add_recent(self.path_to_save)
@@ -751,9 +727,6 @@ class Application(tk.Frame):
         size = (event.width, event.height)
         self.OBJECT_TO_DISPLAY_IMAGE = self.OBJECT_TO_DISPLAY_IMAGE.resize(size, Image.ANTIALIAS)
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
-        # scale_w = event.width / self.OBJECT_TO_DISPLAY.width()
-        # scale_h = event.height / self.OBJECT_TO_DISPLAY.height()
-        # self.OBJECT_TO_DISPLAY.zoom(scale_w, scale_h)
         self.display.delete("IMG")
         self.display.create_image(0, 0, image=self.OBJECT_TO_DISPLAY_PHOTOIMAGE, anchor=tk.NW, tags="IMG")
 
@@ -766,15 +739,12 @@ class Application(tk.Frame):
                     Br.save_step()
                 else:
                     self.painting_flag = True
-                print("Current flag state: ", self.painting_flag)
 
     # GUI SUPPORT METHODS
 
     # loading using images to list
     def initialize_images(self):
         # ICONS 24x24 pixels
-        # Resizing image to fit on button
-        # brushIcon = brushIcon.subsample(10, 10)
         brush = ImageTk.PhotoImage(file=r"data/brush.png")
         pencil = tk.PhotoImage(file=r"data/pencil.png")
         spray = tk.PhotoImage(file=r"data/spray.png")
@@ -953,10 +923,6 @@ class Application(tk.Frame):
         # central frame for image
         self.IMAGE_FRAME = tk.Frame(self,  width=temp_width, height=temp_height)
         self.IMAGE_FRAME.grid(row=0, column=1, sticky=tk.W + tk.E + tk.N + tk.S)
-        # self.IMAGE_FRAME.columnconfigure(0, weight=1)
-        # self.IMAGE_FRAME.rowconfigure(0, weight=1)
-        # self.IMAGE_FRAME.columnconfigure(1, weight=1)
-        # self.IMAGE_FRAME.rowconfigure(1, weight=1)
 
         # SUB_FRAMES
 
@@ -1105,8 +1071,6 @@ class Application(tk.Frame):
         self.parent = parent
         self.style = ttk.Style()
         self.style.theme_use('alt')
-        # self.style = ThemedStyle(self.parent)
-        # self.style.set_theme("scidgray")
         # initializing camera module
         # VARIABLES
         self.toolsConfigPanel = None
@@ -1117,10 +1081,8 @@ class Application(tk.Frame):
         self.OBJECT_TO_DISPLAY_PHOTOIMAGE = ImageTk.PhotoImage(self.OBJECT_TO_DISPLAY_IMAGE)
         self.path_to_save = ""
         if os.path.isfile('./config.ini'):
-            print('EXIST')
             self.config = ConfigManager.ConfigManager("config.ini")
         else:
-            print('NOT EXIST')
             self.config = ConfigManager.ConfigManager("config.ini")
             self.config.write_default()
         self.config.read()
@@ -1155,10 +1117,6 @@ class Application(tk.Frame):
         self.grid(sticky=tk.NSEW)
         self.initialize_images()
         self.create_widgets()
-
-
-# style = ttk.Style()
-# print(style.theme_names())
 
 
 root = tk.Tk()
