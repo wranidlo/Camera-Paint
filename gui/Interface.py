@@ -752,7 +752,6 @@ class Application(tk.Frame):
         fill = tk.PhotoImage(file=r"../resources/data/icons8-fill.png")
         dropper = tk.PhotoImage(file=r"../resources/data/dropper.png")
         text = tk.PhotoImage(file=r"../resources/data/font.png")
-        red_colour = tk.PhotoImage(file=r"../resources/data/redColour.png")
         plus = tk.PhotoImage(file=r"../resources/data/plus.png")
         minus = tk.PhotoImage(file=r"../resources/data/minus.png")
         square = tk.PhotoImage(file=r"../resources/data/rectangle.png")
@@ -768,7 +767,6 @@ class Application(tk.Frame):
         self.IMAGES['fill'] = fill
         self.IMAGES['pickColor'] = dropper
         self.IMAGES['text'] = text
-        self.IMAGES['redColour'] = red_colour
         self.IMAGES['plus'] = plus
         self.IMAGES['minus'] = minus
 
