@@ -20,7 +20,7 @@ Basic feature of the program is to map the motion captured by the camera onto th
 5. Text
 
 Some of these tools have configuration options like size or opacity.
-Except these tool, we also offer other options that are typical for graphic editors (undo, redo, cut, copy, paste, clear, changing image size) and saving images in five types (PNG, JPEG, GIF, TIFF and BMP)
+Except these tool, we also offer other options that are typical for graphic editors (undo, redo, cut, copy, paste, clear, changing image size) and saving images in five types (PNG, JPEG, GIF, TIFF and BMP).
 
 ## Technology
 Project is created in Python 3 and uses several libraries:
@@ -35,9 +35,11 @@ Project is created in Python 3 and uses several libraries:
 ### Instruction
 
 ## Screenshots
+![app_start_view_scr](/resources/screenshots/CP-startView.PNG)
+*Screen. 1: The start view of a Camera Paint*
 
 ## Future updates
-Project version is 1.0 and for now we are not planning any bigger changes. Possible updates can add more tools, increase efficiency and improve the interface
+Project version is 1.0 and for now we are not planning any bigger changes. Possible updates can add more tools, increase efficiency and improve the interface.
 
 ## Credits
 
