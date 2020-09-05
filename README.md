@@ -44,5 +44,7 @@ Project is created in Python 3 and uses several libraries:
 Project version is 1.0 and for now we are not planning any bigger changes. Possible updates can add more tools, increase efficiency and improve the interface.
 
 ## Credits
+All icons used in Camera Paint are taken from https://www.flaticon.com and https://icons8.com. Detailed references are in the file CREDITS.
 
 ## License
+The project is under MIT license, more information in LICENSE file.
