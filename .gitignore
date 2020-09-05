@@ -3,5 +3,6 @@
 .idea/workspace.xml
 .idea/misc.xml
 .idea/Camera-Paint.iml
+gui/config.ini
 *.pyc 
 venv/
