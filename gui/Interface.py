@@ -745,25 +745,19 @@ class Application(tk.Frame):
     # loading using images to list
     def initialize_images(self):
         # ICONS 24x24 pixels
-        brush = ImageTk.PhotoImage(file=r"data/brush.png")
-        pencil = tk.PhotoImage(file=r"data/pencil.png")
-        spray = tk.PhotoImage(file=r"data/spray.png")
-        colorPicker = tk.PhotoImage(file=r"data/icons8-colors.png")
-        squared_selection = tk.PhotoImage(file=r"data/area.png")
-        circle_selection = tk.PhotoImage(file=r"data/select.png")
-        colour_selection = tk.PhotoImage(file=r"data/dropper_2.png")
-        wand_selection = tk.PhotoImage(file=r"data/magic.png")
-        fill = tk.PhotoImage(file=r"data/icons8-fill.png")
-        dropper = tk.PhotoImage(file=r"data/dropper.png")
-        zoom = tk.PhotoImage(file=r"data/search.png")
-        text = tk.PhotoImage(file=r"data/font.png")
-        saturation = tk.PhotoImage(file=r"data/saturation.png")
-        red_colour = tk.PhotoImage(file=r"data/redColour.png")
-        plus = tk.PhotoImage(file=r"data/plus.png")
-        minus = tk.PhotoImage(file=r"data/minus.png")
-        square = tk.PhotoImage(file=r"data/rectangle.png")
-        filled_circle = tk.PhotoImage(file=r"data/filled_circle.png")
-        circle = tk.PhotoImage(file=r"data/circle.png")
+        brush = ImageTk.PhotoImage(file=r"../resources/data/brush.png")
+        pencil = tk.PhotoImage(file=r"../resources/data/pencil.png")
+        spray = tk.PhotoImage(file=r"../resources/data/spray.png")
+        colorPicker = tk.PhotoImage(file=r"../resources/data/icons8-colors.png")
+        fill = tk.PhotoImage(file=r"../resources/data/icons8-fill.png")
+        dropper = tk.PhotoImage(file=r"../resources/data/dropper.png")
+        text = tk.PhotoImage(file=r"../resources/data/font.png")
+        red_colour = tk.PhotoImage(file=r"../resources/data/redColour.png")
+        plus = tk.PhotoImage(file=r"../resources/data/plus.png")
+        minus = tk.PhotoImage(file=r"../resources/data/minus.png")
+        square = tk.PhotoImage(file=r"../resources/data/rectangle.png")
+        filled_circle = tk.PhotoImage(file=r"../resources/data/filled_circle.png")
+        circle = tk.PhotoImage(file=r"../resources/data/circle.png")
         self.IMAGES['square'] = square
         self.IMAGES['filled_circle'] = filled_circle
         self.IMAGES['circle'] = circle
@@ -771,16 +765,10 @@ class Application(tk.Frame):
         self.IMAGES['pencil'] = pencil
         self.IMAGES['spray'] = spray
         self.IMAGES['colorPicker'] = colorPicker
-        self.IMAGES['squaredSelection'] = squared_selection
-        self.IMAGES['circleSelection'] = circle_selection
-        self.IMAGES['colourSelection'] = colour_selection
-        self.IMAGES['wandSelection'] = wand_selection
         self.IMAGES['fill'] = fill
         self.IMAGES['pickColor'] = dropper
-        self.IMAGES['zoom'] = zoom
         self.IMAGES['text'] = text
         self.IMAGES['redColour'] = red_colour
-        self.IMAGES['saturation'] = saturation
         self.IMAGES['plus'] = plus
         self.IMAGES['minus'] = minus
 
