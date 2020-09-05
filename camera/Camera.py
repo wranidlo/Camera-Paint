@@ -6,24 +6,20 @@ import math
 # when started put object to track into smaller rectangle and press space
 # to end press ESC
 
-
-def masking_histogram(frame, histogram):
-    frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (19, 19))
-    struct_element = cv2.calcBackProject([frame_hsv], [0, 1], histogram, [0, 150, 0, 256], 1)
+def get_back_histogram(image, hist):
+    disc = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (27, 27))
+    struct_element = cv2.calcBackProject([image], [0, 1], hist, [0, 150, 0, 256], 1)
     cv2.filter2D(struct_element, -1, disc, struct_element)
-    _, thresh = cv2.threshold(struct_element, 150, 255, cv2.THRESH_BINARY)
-    thresh = cv2.merge((thresh, thresh, thresh))
-    return cv2.bitwise_and(frame, thresh)
+    return struct_element
 
 
-def calculate_center(best_contours):
-    moment = cv2.moments(best_contours)
-    if moment['m00'] != 0:
-        x_dimension, y_dimension = (int(moment['m10'] / moment['m00']), int(moment['m01'] / moment['m00']))
+def calculate_center(best_contour, last_center):
+    centroid = cv2.moments(best_contour)
+    if centroid['m00'] != 0:
+        x_dimension, y_dimension = (int(centroid['m10'] / centroid['m00']), int(centroid['m01'] / centroid['m00']))
         return x_dimension, y_dimension
     else:
-        return None
+        return last_center
 
 
 def calculate_contours(histogram_mask):
@@ -31,6 +27,14 @@ def calculate_contours(histogram_mask):
     _, thresh = cv2.threshold(histogram_gray, 0, 255, 0)
     contour, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     return contour
+
+
+def masking_histogram(frame, histogram):
+    frame_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+    struct_element = get_back_histogram(frame_hsv, histogram)
+    _, thresh = cv2.threshold(struct_element, 150, 255, cv2.THRESH_TOZERO)
+    thresh = cv2.merge((thresh, thresh, thresh))
+    return cv2.bitwise_and(thresh, frame)
 
 
 class camera:
@@ -66,49 +70,6 @@ class camera:
         histogram = cv2.calcHist([hsv_frame], [0, 1], None, [150, 256], [0, 150, 0, 256])
 
         return cv2.normalize(histogram, histogram, 0, 255, cv2.NORM_MINMAX), hsv_frame
-
-    """
-    def capture(self):
-        cap = cv2.VideoCapture(0)
-        cv2.namedWindow('Life', cv2.WINDOW_NORMAL)
-        cv2.resizeWindow('Life', 800, 600)
-
-        while cap.isOpened():
-            ret, frame = cap.read()
-
-            frame = cv2.flip(frame, 1)
-
-            if self.histogram_created_check is False:
-                frame = self.draw_place(frame)
-
-            if cv2.waitKey(1) & 0xFF == 32:
-                self.histogram_created_check = True
-                histogram, _ = self.create_histogram(frame)
-
-            if self.histogram_created_check:
-                hist_masked_image = masking_histogram(frame, histogram)
-                erode_kernel = np.ones((5, 5), np.uint8)
-                dilate_kernel = np.ones((5, 5), np.uint8)
-                hist_masked_image = cv2.erode(hist_masked_image, erode_kernel)
-                hist_masked_image = cv2.dilate(hist_masked_image, dilate_kernel)
-                contour_list = contours(hist_masked_image)
-                try:
-                    max_cont = max(contour_list, key=cv2.contourArea)
-                except ValueError:
-                    print("out")
-                cnt_centroid = centroid(max_cont)
-                cv2.circle(frame, cnt_centroid, 5, [255, 0, 255], -1)
-            else:
-                frame = self.draw_place(frame)
-
-            cv2.imshow('Life', frame)
-
-            if cv2.waitKey(1) & 0xFF == 27:
-                break
-
-        cap.release()
-        cv2.destroyAllWindows()
-    """
 
     def scan_object_fast(self):
 
@@ -167,7 +128,7 @@ class camera:
             contour_list = calculate_contours(hist_masked_image)
             try:
                 max_cont = max(contour_list, key=cv2.contourArea)
-                cnt_centroid = calculate_center(max_cont)
+                cnt_centroid = calculate_center(max_cont, self.last_center)
                 if math.sqrt((self.last_center[0] - cnt_centroid[0]) ** 2 +
                              (self.last_center[1] - cnt_centroid[1]) ** 2) > 100:
                     cnt_centroid = self.last_center
@@ -192,10 +153,8 @@ class camera:
         return len(contour_list)
 
 
-def main():
+def main():  # This main is for test purpose only
     usage = camera()
-    # usage.capture()
-    # usage.scan_object()
 
     cv2.namedWindow('Scan', cv2.WINDOW_NORMAL)
     cv2.resizeWindow('Scan', 800, 600)
