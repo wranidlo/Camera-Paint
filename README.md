@@ -31,6 +31,10 @@ Project is created in Python 3 and uses several libraries:
 3. Other libraries listed in the file requirements.txt
 
 ## How to use
+
+### Instalation
+
+### Instruction
 1. Scan object that will be your pointer.
 2. Check if scanned object is correctly tracked.
 3. Start paint mode to use diffrent painting tools.
@@ -39,11 +43,6 @@ Project is created in Python 3 and uses several libraries:
    * Change color by "change color" option or with use of clor picker.
    * Fill image with given color by pressing icon "fill".
 4.Other options are in top bar (rotating image, clearing image, saving and loading images, undoing and redoing changes).
-
-
-### Instalation
-
-### Instruction
 
 ## Screenshots
 ![app_start_view_scr](/resources/screenshots/CP-startView.PNG)
