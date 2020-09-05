@@ -1,4 +1,6 @@
 # Camera-Paint
+[![.Python](https://img.shields.io/badge/python-3.7%20%7C%203.8-blue)]()
+---
 System that allows to paint images with use of camera.  
 You can scan any object you want and use it as your pointer.  
 You can use a lot of diffrent types of pencils, brushes and other graphic tools. 
