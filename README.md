@@ -31,6 +31,15 @@ Project is created in Python 3 and uses several libraries:
 3. Other libraries listed in the file requirements.txt
 
 ## How to use
+1. Scan object that will be your pointer.
+2. Check if scanned object is correctly tracked.
+3. Start paint mode to use diffrent painting tools.
+   * Press spacebar to draw with chosen drawing tool (brush, spray, pnecil) or to add chosen shape (square, empty circle, filled cirlce).
+   * To add text choose option "text" and input chosen letters, after inputing press enter to confirm text and press "text" icon to add text to painting.
+   * Change color by "change color" option or with use of clor picker.
+   * Fill image with given color by pressing icon "fill".
+4.Other options are in top bar (rotating image, clearing image, saving and loading images, undoing and redoing changes).
+
 
 ### Instalation
 
