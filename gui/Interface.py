@@ -648,16 +648,20 @@ class Application(tk.Frame):
 
     def cut(self):
         Br.cut()
+        Br.save_step()
 
     def copy(self):
         Br.copy()
+        Br.save_step()
 
     def paste(self):
         _, x_y = self.usage.get_center()
         Br.paste(x_y[0], x_y[1])
+        Br.save_step()
 
     def clear(self):
         Br.clean_canvas()
+        Br.save_step()
 
     # VIEW MENU METHODS
     def full_screen(self):
